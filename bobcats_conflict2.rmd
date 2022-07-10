@@ -459,7 +459,7 @@ rai.wide.sqrt <- tidyr::spread(rai.wide.sqrt, key = Class_month, value = RAI.sqr
 Merge camera metadata with RAI.
 
 ```{r merge metadata with RAI, message = F}
-covariates <- read.csv(file = here::here('C:/Users/lavol/Documents/bobcats_conflict', 'camera_metadata_rasters.csv'))
+covariates <- read.csv(file = here::here('C:/Users/lavol/Documents/bobcats_conflict/bobcats_conflict', 'camera_metadata_rasters.csv'))
 # merge all of these with covariates
 rai.summarized <- merge(rai.summarized, covariates)
 rai.wide <- merge(rai.wide, covariates)
@@ -468,7 +468,87 @@ all.rai <- plyr::join(all.rai, covariates)
 ```
 
 # Part 2) Determining baseline bobcat activity
+```{r}
+subset.rai <- read.csv("subset.rai.csv")
+
+# Total number of bobcat detections
+x <- subset(all.rai, Class == "Bobcat")$Count
+sum(x, na.rm = TRUE) # Sum is 698 bobcats
+
+# Examining Seasonality
+ggplot(subset.rai, aes(x = Season, y = Bobcat_RAI, fill = Season)) +
+  geom_col() +
+  labs(x ="Seasonal", y = "Relative Bobcat Activity") +
+  ggsave("figures/bobcat_seasonality.png", width = 4, height = 4)
+
+# Bobcat Diel Activity Pattern -- need to get code
+
+# Examining environmental variables
+
+##rugged81.clean
+ggplot(subset.rai, aes(x = rugged81.clean, y = Bobcat_RAI)) +
+  geom_smooth(method = lm) +
+   ggsave("figures/rugged81.png", width = 4, height = 4)
+
+##rugged121.clean
+ggplot(subset.rai, aes(x = rugged121.clean, y = Bobcat_RAI)) +
+  geom_smooth(method = lm) +
+  ggsave("figures/rugged121.png", width = 4, height = 4)
+
+##road.dist.clean
+ggplot(subset.rai, aes(x = road.dist.clean, y = Bobcat_RAI)) +
+  geom_smooth(method = lm) +
+  ggsave("figures/roaddist.png", width = 4, height = 4)
+
+#elevation.clean
+ggplot(subset.rai, aes(x = elevation.clean, y = Bobcat_RAI)) +
+  geom_smooth(method = lm) +
+  ggsave("figures/elevation.png", width = 4, height = 4)
+
+#slope.clean
+ggplot(subset.rai, aes(x = slope.clean, y = Bobcat_RAI)) +
+  geom_smooth(method = lm) +
+  ggsave("figures/slope.png", width = 4, height = 4)
+
+#vegetation.coarser.clean (discrete!)
+ggplot(subset.rai, aes(x = vegetation.coarser.clean, y = Bobcat_RAI)) +
+  geom_bar(stat = "identity") +
+  ggsave("figures/veg.png", width = 4, height = 4)
+
+
+```
+
 
 # Part 3) Determining the impact of Foxlights on Bobcat Activity
+```{r}
+rai_bobcat_lv <- read.csv("rai_bobcat_lv.csv")
+```
+
 
 # Part 4) Determining the impact of LGDs on Bobcat Activity
+
+## Question 1: How do bobcat detections vary by LGD presence?
+```{r}
+# Dog (Y/N) and Bobcat RAI using Grid Camera Survey Data
+ggplot(subset.rai, aes(x = Dog, y = Bobcat_RAI, fill = Dog)) +
+  geom_boxplot(alpha=2) +
+  scale_x_discrete(labels = c("No", "Yes")) +
+  labs(x ="Livestock Guardian Dog Presence", y = "Relative Bobcat Activity (detections/month)") +
+  scale_fill_manual(values=c("cadetblue4", "orange1")) 
+
+# Dog (Y/N) and Bobcat RAI using Foxlight Data
+ggplot(rai_bobcat_lv, aes(x = Dog, y = Bobcat_RAI, fill = Dog)) +
+  geom_boxplot(alpha=2) +
+  scale_x_discrete(labels = c("No", "Yes")) +
+  labs(x ="Livestock Guardian Dog Presence", y = "Relative Bobcat Activity (detections/month)") +
+  scale_fill_manual(values=c("cadetblue4", "orange1")) 
+
+# Sheep (Y/N) and Bobcat RAI
+ggplot(subset.rai, aes(x = Sheep, y = Bobcat_RAI, fill = Sheep)) +
+  geom_boxplot(alpha=2) +
+  scale_x_discrete(labels = c("No", "Yes")) +
+  labs(x ="Sheep Presence", y = "Relative Bobcat Activity (detections/month)") +
+  scale_fill_manual(values=c("cadetblue4", "orange1")) 
+
+```
+
