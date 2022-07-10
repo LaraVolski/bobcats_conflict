@@ -1,0 +1,42 @@
+---
+title: "bobcats_conflict"
+author: "Lara Volski"
+date: "2022-07-10"
+output: html_document
+---
+
+# Part 1) Setting up
+
+### 1.1 Load Packages
+```{r library.packages, include = FALSE}
+library(nlme)
+library(ggplot2)
+library(overlap)
+library(maptools)
+library(lubridate)
+library(plyr)
+library(camtrapR)
+library(dplyr)
+library(lme4)
+library(MASS)
+library(circular) #Watson2Test
+library(ggpattern)
+library(tidyverse)
+library(shiny)
+library(shinythemes)
+library(overlap)
+library(here)
+library(shinydashboard)
+library(leaflet)
+library(sp)
+library(rgdal)
+library(broom)
+library(viridis)
+library(ggmap)
+library(magrittr)
+library(sf)
+library(scales)
+library(tidyverse)
+library(plotrix)
+library(here)
+```
