@@ -585,7 +585,13 @@ labs(x ="Week", y = "Median Bobcat Detections") +
 
 # Bobcat Diel Patterns (in other R project)
 
-# Bobcat Modelling 
+# Bobcat Env Variables
+ggplot(rai_bobcat_lv, aes(x = Rugged.121, y = RAI)) +
+  geom_smooth(method = lm) 
+
+ggplot(rai_bobcat_lv, aes(x = rugged9.clean, y = RAI)) +
+  geom_smooth(method = lm) 
+
 ```
 
 
@@ -643,28 +649,5 @@ ggplot(data = rai_bobcat_lv, aes(x = Ind_Dogs, y = RAI * 35, group = Ind_Dogs)) 
   labs(x ="Dogs", y = "Bobcat RAI") +
   theme(legend.position = "none") +
   ggsave("figures/bobcat_boxplot_individualdogs.png", width = 4, height = 4)
-
-# Modelling Dogs Using the Grid Survey Camera Dataset
-
-# Step 1 - Set up a model with all the variables of interest.
-full.model.lgd <- lmer(Count ~ Fire + Season + rugged81.clean + rugged121.clean + road.dist.clean + elevation.clean + slope.clean + vegetation.coarser.clean + Sheep_RAI + Sheep + Dog_RAI + Dogs_Scaled + (1|Camera),
-                      data = subset.rai, na.action = "na.fail")
-
-AIC(full.model.lgd) ## AIC is 5637.573
-vif(full.model.lgd) ## Rugged81 has a slightly higher VIF, so I cut that one between the two ruggeds. Dogs_Scaled and Sheep_RAI were also cut based on which had the highest VIF.
-
-reduced.model.lgd <- lmer(Count ~ Fire + Season + rugged121.clean + road.dist.clean + elevation.clean + slope.clean + vegetation.coarser.clean + Sheep + Dog_RAI + (1|Camera),
-                      data = subset.rai, na.action = "na.fail")
-
-AIC(reduced.model.lgd) ## AIC is 5626.776
-vif(reduced.model.lgd) ## VIF under 4 for all
-
-#Now, to dredge! First install and load the MuMIn package
-install.packages("MuMIn")
-library(MuMIn)
-#Then dredging is as simple as...
-dredge.reduced.model.lgd <- dredge(reduced.model.lgd)
-```
-
 ```
 

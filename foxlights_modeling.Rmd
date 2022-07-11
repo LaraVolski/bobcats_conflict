@@ -101,7 +101,7 @@ Make candidate models and evaluate them!
 ## Null model/hypothesis - only camera as random effect.
 AIC = 329.0
 ```{r}
-fit.null <- glmer.nb(Detections ~ offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"))
+fit.null <- glmer.nb(Detections ~ offset(log(Operation)) + (1|Camera), data = rai_bobcat_lv)
 summary(fit.null)
 ```
 
@@ -109,14 +109,14 @@ summary(fit.null)
 ### Foxlight only
 AIC = 330.5
 ```{r}
-fit1 <- glmer.nb(Detections ~ Foxlight + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"))
+fit1 <- glmer.nb(Detections ~ Foxlight + offset(log(Operation)) + (1|Camera), data = rai_bobcat_lv)
 summary(fit1)
 ```
 
 ### Sheep only
 AIC = 330.5
 ```{r}
-fit2 <- glmer.nb(Detections ~ Sheep_Presence + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"))
+fit2 <- glmer.nb(Detections ~ Sheep_Presence + offset(log(Operation)) + (1|Camera), data = rai_bobcat_lv)
 summary(fit2)
 ```
 
@@ -166,181 +166,132 @@ summary(fit8)
 
 ## Habitat Variables
 
-### Distance to Water
-AIC = 323.1
-```{r}
-fit9 <- glmer.nb(Detections ~ water.dist.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
-summary(fit9)
-```
-
 ### Elevation
 AIC = 326.6
 ```{r}
-fit10 <- glmer.nb(Detections ~ elevation.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
-summary(fit10)
+fit9 <- glmer.nb(Detections ~ Elevation + offset(log(Operation)) + (1|Camera), data = rai_bobcat_lv, control=glmerControl(optimizer="bobyqa"))
+summary(fit9)
 ```
 
 ### Ruggedness
 AIC = 328.4
 ```{r}
-fit11 <- glmer.nb(Detections ~ rugged121.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
-summary(fit11)
-```
-
-### Foxlight * Distance to Water
-AIC = 326
-```{r}
-fit12 <- glmer.nb(Detections ~ Foxlight * water.dist.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
-summary(fit12)
-vif(fit12)
+fit10 <- glmer.nb(Detections ~ Rugged.121 + offset(log(Operation)) + (1|Camera), data = rai_bobcat_lv, control=glmerControl(optimizer="bobyqa"))
+summary(fit10)
 ```
 
 ### Foxlight * Elevation
 AIC = 330.3
 ```{r}
-fit13 <- glmer.nb(Detections ~ Foxlight * elevation.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
-summary(fit13)
-vif(fit13)
+fit11 <- glmer.nb(Detections ~ Foxlight * elevation.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
+summary(fit11)
+vif(fit11)
 ```
 
 ### Foxlight * Ruggedness121
 AIC = 329.9
 ```{r}
-fit14 <- glmer.nb(Detections ~ Foxlight * rugged121.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
-summary(fit14)
-vif(fit14)
-```
-
-### Sheep_Presence * Distance to Water
-AIC = 325.7
-```{r}
-fit15 <- glmer.nb(Detections ~ Sheep_Presence * water.dist.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
-summary(fit15)
-vif(fit15)
+fit12 <- glmer.nb(Detections ~ Foxlight * Rugged.121 + offset(log(Operation)) + (1|Camera), data = rai_bobcat_lv, control=glmerControl(optimizer="bobyqa"))
+summary(fit12)
+vif(fit12)
 ```
 
 ### Sheep_Presence * Elevation
 AIC = 326.9
 ```{r}
-fit16 <- glmer.nb(Detections ~ Sheep_Presence * elevation.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
-summary(fit16)
-vif(fit16)
+fit13 <- glmer.nb(Detections ~ Sheep_Presence * elevation.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
+summary(fit13)
+vif(fit13)
 ```
 
 ### Sheep_Presence * Ruggedness
 AIC = 331.4
 ```{r}
-fit17 <- glmer.nb(Detections ~ Sheep_Presence * rugged121.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
-summary(fit17)
-vif(fit17)
+fit14 <- glmer.nb(Detections ~ Sheep_Presence * rugged121.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
+summary(fit14)
+vif(fit14)
 ```
 
 ## Dogs
 AIC = 328.1
 ```{r}
 rai_bobcat2 <- read.csv("rai_bobcat_lv.csv", header=T)
-fit18 <- glmer.nb(Detections ~ I(Ind_Dogs^2) + Ind_Dogs + offset(log(Operation)) + (1|Camera), data = rai_bobcat2)
-summary(fit18)
-```
-
-## Dogs + Dist.Water
-AIC = 320.8
-```{r}
-fit19 <- glmer.nb(Detections ~ Ind_Dogs + Dist.Water + offset(log(Operation)) + (1|Camera), data = rai_bobcat2)
-summary(fit19)
-vif(fit19)
-```
-
-## Dogs * Dist.Water
-AIC = 322.6
-VIF is over 4!!!
-```{r}
-fit20 <- glmer.nb(Detections ~ Ind_Dogs * Dist.Water + offset(log(Operation)) + (1|Camera), data = rai_bobcat2)
-summary(fit20)
-vif(fit20)
+fit15 <- glmer.nb(Detections ~ I(Ind_Dogs^2) + Ind_Dogs + offset(log(Operation)) + (1|Camera), data = rai_bobcat2)
+summary(fit15)
 ```
 
 ## Dogs * Rugged.121
 AIC = 326.5
 ```{r}
-fit21 <- glmer.nb(Detections ~ Ind_Dogs * Rugged.121 + offset(log(Operation)) + (1|Camera), data = rai_bobcat2)
-summary(fit21)
-vif(fit21)
+fit16 <- glmer.nb(Detections ~ Ind_Dogs * Rugged.121 + offset(log(Operation)) + (1|Camera), data = rai_bobcat2)
+summary(fit16)
+vif(fit16)
 ```
 
 ## Dogs Scaled
 AIC = 328.1
 ```{r}
-fit22 <- glmer.nb(Detections ~ Dogs_Scaled + offset(log(Operation)) + (1|Camera), data = rai_bobcat2)
-summary(fit22)
-vif(fit22)
+fit17 <- glmer.nb(Detections ~ Dogs_Scaled + offset(log(Operation)) + (1|Camera), data = rai_bobcat2)
+summary(fit17)
+vif(fit17)
 ```
 
-## Dogs Scaled * Dist_Water
-AIC = 322.6
-VIF for Dogs_Scaled = 18.7768
+## Dogs_RAI
+AIC = 328.1
 ```{r}
-fit23 <- glmer.nb(Detections ~ Dogs_Scaled * Dist.Water + offset(log(Operation)) + (1|Camera), data = rai_bobcat2)
-summary(fit23)
-vif(fit23)
+fit18 <- glmer.nb(Detections ~ Dog_RAI + offset(log(Operation)) + (1|Camera), data = rai_bobcat_lv)
+summary(fit18)
+vif(fit18)
 ```
 
-## Dogs Scaled + Dist_Water
-AIC = 320.8
-VIF < 4
+## Road Distance
+AIC = 331
 ```{r}
-fit24 <- glmer.nb(Detections ~ Dogs_Scaled + Dist.Water + offset(log(Operation)) + (1|Camera), data = rai_bobcat2)
-summary(fit24)
-vif(fit24)
+fit19 <- glmer.nb(Detections ~ road.dist.clean + offset(log(Operation)) + (1|Camera), data = rai_bobcat_lv, control=glmerControl(optimizer="bobyqa"))
+summary(fit19)
 ```
-
-## 
-AIC = 320.8
-VIF < 4
+## Dog_RAI * Elevation * Foxlight * Ruggedness
+AIC = 331
+# convergence error
 ```{r}
-fit25 <- glmer.nb(Detections ~ Rugged.121 + offset(log(Operation)) + (1|Camera), data = rai_bobcat2, control=glmerControl(optimizer="bobyqa"))
-summary(fit25)
-vif(fit25)
+fit20 <- glmer.nb(Detections ~ Dog_RAI * Elevation * Foxlight * Rugged.121 + offset(log(Operation)) + (1|Camera), data = rai_bobcat_lv, control=glmerControl(optimizer="bobyqa"))
+summary(fit20)
+vif(fit20)
 ```
 
 
 # Part 3 - Dredge Models
 
 ```{r}
-rai_bobcat2 <- read.csv("rai_bobcat_lv.csv")
+rai_bobcat_lv <- read.csv("rai_bobcat_lv.csv")
+
 ## Full lmer model
-full.model <- lmer(Detections ~ Foxlight + Sheep_Presence + Dogs_Scaled + Elevation +
+foxlights.full.model <- lmer(Detections ~ Foxlight + Sheep_Presence + Dog_RAI + Dogs_Scaled + Elevation +
                      rugged9.clean + rugged25.clean + rugged49.clean + rugged81.clean +
-                     Rugged.121 + Dist.Water + Slope + Fence.Dist + hq.dist.clean +
-                     road.dist.clean + viewshed.clean + ndvi.16.clean.1 +
-                     veg.edges.dist.clean + chap.edges.dist.clean + 
+                     Rugged.121  + Slope + hq.dist.clean + Phase +
+                     road.dist.clean + viewshed.clean +
                         offset(log(Operation)) + (1|Camera),
-                      data = rai_bobcat2, na.action = "na.fail")
-AIC(full.model) ## AIC is 427.4306
-vif(full.model) ## All except Foxlight, Sheep_Presence, and Dogs_Scaled have VIF > 4
-full.model.reduced <- lmer(Detections ~ Foxlight + Sheep_Presence + Dogs_Scaled +
-                               Dist.Water + Slope + Fence.Dist + road.dist.clean +
-                               veg.edges.dist.clean + chap.edges.dist.clean + 
-                               (1|Camera), 
-                               data = rai_bobcat2, na.action = "na.fail")
-AIC(full.model.reduced) ## AIC is 454.5723
-vif(full.model.reduced) ## All except Sheep_Presence have a VIF < 2, Sheep_Presence is 2.023585
+                      data = rai_bobcat_lv, na.action = "na.fail")
+
+AIC(foxlights.full.model) ## AIC is 437.096
+vif(foxlights.full.model) ## All except Foxlight, Sheep_Presence, and Dogs_RAI have VIF > 4
+
+## Reduced lmer model
+reduced.model.foxlights <- lmer(Detections ~ Foxlight + Sheep_Presence + Dog_RAI + Elevation +
+                     Rugged.121  + Slope + Phase +
+                     road.dist.clean + viewshed.clean +
+                        offset(log(Operation)) + (1|Camera),
+                      data = rai_bobcat_lv, na.action = "na.fail")
+
+AIC(reduced.model.foxlights) ## AIC is 459.8778
+vif(reduced.model.foxlights) ## All have a VIF < 2
+
 #Now, to dredge! First install and load the MuMIn package
+install.packages("MuMIn")
+library(MuMIn)
+
 #Then dredging is as simple as...
-Dredge.Table <- dredge(full.model.reduced)
-trial.model <- lmer(Detections ~ Foxlight + Sheep_Presence + Dogs_Scaled +
-                      Dist.Water + Slope + Fence.Dist +
-                     road.dist.clean + viewshed.clean +
-                        offset(log(Operation)) + (1|Camera),
-                      data = rai_bobcat2, na.action = "na.fail")
-AIC(trial.model) ## AIC is 427.4306
-vif(trial.model)
-## last trial
-trial.model <- lmer(Detections ~ Foxlight + Dogs_Scaled +
-                      Dist.Water + Slope + Fence.Dist +
-                     road.dist.clean + viewshed.clean +
-                        offset(log(Operation)) + (1|Camera),
-                      data = rai_bobcat2, na.action = "na.fail")
-AIC(trial.model) ## AIC is 454.5723
-vif(trial.model) ## All except Sheep_Presence have a VIF < 2, Sheep_Presence is 2.023585
-Dredge.Table2 <- dredge(trial.model)
+dredge.reduced.model.foxlights <- dredge(reduced.model.foxlights)
+```
+
+

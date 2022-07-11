@@ -1,0 +1,42 @@
+---
+title: "LGD_Models"
+author: "Lara Volski"
+date: "2022-07-11"
+output: html_document
+---
+
+```{r}
+
+# Modelling Dogs Using the Grid Survey Camera Dataset
+
+# Step 1 - Set up a model with all the variables of interest.
+full.model.lgd <- lmer(Count ~ Fire + Season + rugged81.clean + rugged121.clean + road.dist.clean + elevation.clean + slope.clean + vegetation.coarser.clean + Sheep_RAI + Sheep + Dog_RAI + Dogs_Scaled + (1|Camera),
+                      data = subset.rai, na.action = "na.fail")
+
+AIC(full.model.lgd) ## AIC is 5637.573
+vif(full.model.lgd) ## Rugged81 has a slightly higher VIF, so I cut that one between the two ruggeds. Dogs_Scaled and Sheep_RAI were also cut based on which had the highest VIF.
+
+reduced.model.lgd <- lmer(Count ~ Fire + Season + rugged121.clean + road.dist.clean + elevation.clean + slope.clean + vegetation.coarser.clean + Sheep + Dog_RAI + (1|Camera),
+                      data = subset.rai, na.action = "na.fail")
+
+AIC(reduced.model.lgd) ## AIC is 5626.776
+vif(reduced.model.lgd) ## VIF under 4 for all
+
+#Now, to dredge! First install and load the MuMIn package
+install.packages("MuMIn")
+library(MuMIn)
+#Then dredging is as simple as...
+dredge.reduced.model.lgd <- dredge(reduced.model.lgd)
+```
+# Part 2 - Model selection
+
+Make candidate models and evaluate them!
+
+## Null model/hypothesis - only camera as random effect.
+AIC = 329.0
+```{r}
+fit.null <- glmer.nb(Count ~ offset(log(Operation)) + (1|Camera), data = subset.rai)
+summary(fit.null)
+```
+
+
