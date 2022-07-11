@@ -23,6 +23,9 @@ library(tidyverse)
 library(plyr)
 library(plotrix)
 library(here)
+library(MASS)
+library(lme4)
+library(car)
 ```
 
 ### 1.2 Read in CSVs
@@ -516,12 +519,73 @@ ggplot(subset.rai, aes(x = vegetation.coarser.clean, y = Bobcat_RAI)) +
   ggsave("figures/veg.png", width = 4, height = 4)
 
 
+## Graph Bobcat RAI by Sheep Presence
+ggplot(subset.rai, aes(x = Sheep, y = Bobcat_RAI, fill = Sheep)) +
+  geom_boxplot() +
+  theme_bw() +
+  theme(legend.position = "none") +
+  scale_x_discrete(labels = c("No", "Yes")) +
+  scale_y_log10() +
+  labs(x ="Sheep Present", y = "Relative Bobcat Activity (detections/month)") +
+  scale_fill_manual(values=c("cadetblue4", "orange1")) +
+  ggsave("figures/bobcat_sheepYorN.png", width = 4, height = 4)
+
+## Graph Bobcat RAI by Sheep Presence and Fire
+ggplot(subset.rai, aes(x = Sheep, y = Bobcat_RAI, fill = Sheep)) +
+  geom_boxplot() +
+  theme_bw() +
+  theme(legend.position = "none") +
+  scale_x_discrete(labels = c("Ungrazed", "Grazed")) +
+  scale_y_log10() +
+  facet_wrap(~ Fire) 
+  labs(x ="Before and After Fire", y = "Relative Bobcat Activity (detections/month)") +
+  scale_fill_manual(values=c("cadetblue4", "orange1")) +
+  ggsave("figures/bobcat_sheepYorN_FireYorN.png", width = 4, height = 4)
+
 ```
 
 
 # Part 3) Determining the impact of Foxlights on Bobcat Activity
 ```{r}
 rai_bobcat_lv <- read.csv("rai_bobcat_lv.csv")
+
+# Bobcat activity with and without the presence of Foxlights
+ggplot(rai_bobcat_lv, aes(x = Foxlight, y = RAI*35, fill = Foxlight)) +
+  geom_boxplot(alpha=2) +
+  theme_bw() +
+  theme(legend.position = "none") +
+  scale_x_discrete(labels = c("No", "Yes")) +
+ # geom_jitter() +
+  labs(x ="Foxlight", y = "Relative Bobcat Activity (detections/phase)") +
+  ## scale_y_continuous(labels = mult_format()) +
+  scale_fill_manual(values=c("cadetblue4", "orange1")) + 
+  ggsave("figures/bobcat_foxlight.png", width = 4, height = 4)
+
+# Bobcats and habituation
+habituation.by.rai.foxY <- read.csv("lyru.habituation.foxlights.csv", header=T)
+
+ggplot(habituation.by.rai.foxY, aes(x = Phase, y = LYRU.RAI)) +
+  geom_boxplot(fill = "cadetblue4") +
+  labs(title = "Bobcat Acivity by Active Foxlight Phase",
+       x = "First, Second, Third, Fourth, or Fifth Time a Foxlight was Active at a Site", y = "Bobcat RAI") +
+  ggsave("figures/bobcat_foxlight_habituation.png", width = 6, height = 4)
+
+medians.by.week <- read.csv("lyru.medians.csv", header=T)
+ggplot(data = medians.by.week, aes(x = Week, y = Median, fill = Foxlight)) +
+  geom_bar(stat = "identity", position = position_dodge())  +
+  scale_x_continuous(breaks = seq(1, 9, by = 1)) +
+  theme(plot.title = element_text(hjust = 0.5), 
+        axis.title.x = element_text(size = 12),
+        axis.title.y = element_text(size = 12),
+        legend.title = element_text(face="bold", size = 10)) +
+labs(x ="Week", y = "Median Bobcat Detections") +
+  scale_fill_manual(values=c("cadetblue4", "orange1")) + 
+  theme_bw() +
+  ggsave("figures/bobcat_weekly_detections.png", width = 4, height = 4)
+
+# Bobcat Diel Patterns (in other R project)
+
+# Bobcat Modelling 
 ```
 
 
@@ -536,19 +600,71 @@ ggplot(subset.rai, aes(x = Dog, y = Bobcat_RAI, fill = Dog)) +
   labs(x ="Livestock Guardian Dog Presence", y = "Relative Bobcat Activity (detections/month)") +
   scale_fill_manual(values=c("cadetblue4", "orange1")) 
 
-# Dog (Y/N) and Bobcat RAI using Foxlight Data
-ggplot(rai_bobcat_lv, aes(x = Dog, y = Bobcat_RAI, fill = Dog)) +
-  geom_boxplot(alpha=2) +
-  scale_x_discrete(labels = c("No", "Yes")) +
-  labs(x ="Livestock Guardian Dog Presence", y = "Relative Bobcat Activity (detections/month)") +
-  scale_fill_manual(values=c("cadetblue4", "orange1")) 
-
-# Sheep (Y/N) and Bobcat RAI
+# Sheep (Y/N) and Bobcat RAI using Grid Camera Survey Data
 ggplot(subset.rai, aes(x = Sheep, y = Bobcat_RAI, fill = Sheep)) +
   geom_boxplot(alpha=2) +
   scale_x_discrete(labels = c("No", "Yes")) +
   labs(x ="Sheep Presence", y = "Relative Bobcat Activity (detections/month)") +
   scale_fill_manual(values=c("cadetblue4", "orange1")) 
+
+# Sheep (Y/N) and Bobcat RAI using Foxlight Data
+ggplot(rai_bobcat_lv, aes(x = Sheep_Presence, y = RAI, fill = Sheep_Presence)) +
+  geom_boxplot(alpha=2) +
+  scale_x_discrete(labels = c("No", "Yes")) +
+  labs(x ="Sheep Presence", y = "Relative Bobcat Activity (detections/month)") +
+  scale_fill_manual(values=c("cadetblue4", "orange1")) 
+
+# Individual Dog Count using Grid Camera Survey data
+ggplot(data = subset.rai, aes(x = Individual_Dog, y = Bobcat_RAI)) +
+  geom_smooth(method="loess", se=F) +
+  labs(x ="Dogs", y = "Bobcat RAI")
+
+ggplot(subset.rai, aes(x = Individual_Dog, y = Count)) +
+  geom_col(fill = "cadetblue4") +
+  labs(x = "Dogs", y = "Bobcat Detections")
+
+ggplot(subset.rai, aes(x = Individual_Dog, y = Bobcat_RAI, group = Individual_Dog)) +
+  geom_boxplot(alpha=2, fill = "cadetblue4") +
+  labs(x ="Dogs", y = "Bobcat RAI") +
+  theme(legend.position = "none")
+
+# Individual Dog Count using Foxlight Data
+ggplot(data = rai_bobcat_lv, aes(x = Ind_Dogs, y = RAI)) +
+  geom_point(aes(col=Foxlight)) +
+  geom_smooth(method="loess", se=F) +
+  labs(x ="Dogs", y = "Bobcat RAI")
+
+ggplot(rai_bobcat_lv, aes(x = Ind_Dogs, y = Detections)) +
+  geom_col(fill = "cadetblue4") +
+  labs(x = "Dogs", y = "Bobcat Detections")
+
+ggplot(data = rai_bobcat_lv, aes(x = Ind_Dogs, y = RAI * 35, group = Ind_Dogs)) +
+  geom_boxplot(alpha=2, fill = "cadetblue4") +
+  labs(x ="Dogs", y = "Bobcat RAI") +
+  theme(legend.position = "none") +
+  ggsave("figures/bobcat_boxplot_individualdogs.png", width = 4, height = 4)
+
+# Modelling Dogs Using the Grid Survey Camera Dataset
+
+# Step 1 - Set up a model with all the variables of interest.
+full.model.lgd <- lmer(Count ~ Fire + Season + rugged81.clean + rugged121.clean + road.dist.clean + elevation.clean + slope.clean + vegetation.coarser.clean + Sheep_RAI + Sheep + Dog_RAI + Dogs_Scaled + (1|Camera),
+                      data = subset.rai, na.action = "na.fail")
+
+AIC(full.model.lgd) ## AIC is 5637.573
+vif(full.model.lgd) ## Rugged81 has a slightly higher VIF, so I cut that one between the two ruggeds. Dogs_Scaled and Sheep_RAI were also cut based on which had the highest VIF.
+
+reduced.model.lgd <- lmer(Count ~ Fire + Season + rugged121.clean + road.dist.clean + elevation.clean + slope.clean + vegetation.coarser.clean + Sheep + Dog_RAI + (1|Camera),
+                      data = subset.rai, na.action = "na.fail")
+
+AIC(reduced.model.lgd) ## AIC is 5626.776
+vif(reduced.model.lgd) ## VIF under 4 for all
+
+#Now, to dredge! First install and load the MuMIn package
+install.packages("MuMIn")
+library(MuMIn)
+#Then dredging is as simple as...
+dredge.reduced.model.lgd <- dredge(reduced.model.lgd)
+```
 
 ```
 
