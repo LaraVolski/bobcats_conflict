@@ -274,7 +274,7 @@ foxlights.full.model <- lmer(Detections ~ Foxlight + Sheep_Presence + Dog_RAI + 
                       data = rai_bobcat_lv, na.action = "na.fail")
 
 AIC(foxlights.full.model) ## AIC is 437.096
-vif(foxlights.full.model) ## All except Foxlight, Sheep_Presence, and Dogs_RAI have VIF > 4
+vif(foxlights.full.model) ## All except Foxlight, Sheep_Presence, and Dogs_RAI have VIF > 2
 
 ## Reduced lmer model
 reduced.model.foxlights <- lmer(Detections ~ Foxlight + Sheep_Presence + Dog_RAI + Elevation +
@@ -292,6 +292,16 @@ library(MuMIn)
 
 #Then dredging is as simple as...
 dredge.reduced.model.foxlights <- dredge(reduced.model.foxlights)
+summary(reduced.model.foxlights)
+
+# to get R2 (both ways work)
+# option 1
+r.squaredGLMM(reduced.model.foxlights)
+# option 2
+library(sjPlot)
+tab_model(reduced.model.foxlights)
+
+
 ```
 
 

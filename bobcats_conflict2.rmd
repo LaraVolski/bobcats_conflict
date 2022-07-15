@@ -537,13 +537,12 @@ ggplot(subset.rai, aes(x = Sheep, y = Bobcat_RAI, fill = Sheep)) +
   theme(legend.position = "none") +
   scale_x_discrete(labels = c("Ungrazed", "Grazed")) +
   scale_y_log10() +
-  facet_wrap(~ Fire) 
-  labs(x ="Before and After Fire", y = "Relative Bobcat Activity (detections/month)") +
+  facet_wrap(~ Fire) +
+  # labs(x ="Before and After Fire", y = "Relative Bobcat Activity (detections/month)") +
   scale_fill_manual(values=c("cadetblue4", "orange1")) +
-  ggsave("figures/bobcat_sheepYorN_FireYorN.png", width = 4, height = 4)
+  ggsave("figures/bobcat_sheep_fire.png", width = 4, height = 4)
 
 ```
-
 
 # Part 3) Determining the impact of Foxlights on Bobcat Activity
 ```{r}
@@ -587,10 +586,20 @@ labs(x ="Week", y = "Median Bobcat Detections") +
 
 # Bobcat Env Variables
 ggplot(rai_bobcat_lv, aes(x = Rugged.121, y = RAI)) +
-  geom_smooth(method = lm) 
+  geom_smooth(method = lm) +
+  ggsave("figures/rugged121_foxlightsdata.png", width = 4, height = 4)
 
-ggplot(rai_bobcat_lv, aes(x = rugged9.clean, y = RAI)) +
-  geom_smooth(method = lm) 
+ggplot(rai_bobcat_lv, aes(x = Elevation, y = RAI)) +
+  geom_smooth(method = lm) +
+  ggsave("figures/elevation_foxlightsdata.png", width = 4, height = 4)
+
+ggplot(rai_bobcat_lv, aes(x = road.dist.clean, y = RAI)) +
+  geom_smooth(method = lm) +
+  ggsave("figures/road.dist.clean_foxlightsdata.png", width = 4, height = 4)
+
+ggplot(rai_bobcat_lv, aes(x = Slope, y = RAI)) +
+  geom_smooth(method = lm) +
+  ggsave("figures/slope_foxlightsdata.png", width = 4, height = 4)
 
 ```
 
@@ -650,4 +659,109 @@ ggplot(data = rai_bobcat_lv, aes(x = Ind_Dogs, y = RAI * 35, group = Ind_Dogs)) 
   theme(legend.position = "none") +
   ggsave("figures/bobcat_boxplot_individualdogs.png", width = 4, height = 4)
 ```
+
+## Question 2 - Diel Graph for LGD
+```{r}
+
+write.csv(record.table.all,"record.table.all.csv", row.names = TRUE)
+
+
+
+
+## taken from foxlights code
+# Bobcat Diel Patterns w/ and w/o LGD
+record.table.lyru <- read.csv("record.table.15min1.csv")
+# Setting up
+# specify date format
+record.table.lyru$Date <- as.POSIXct(record.table.lyru$Date)
+# scale clock time to solar time
+coords <- matrix(c(-123.079, 39.0013), nrow=1) # note it is c(longitude, latitude)
+Coords <- sp::SpatialPoints(coords,
+                            proj4string=sp::CRS("+proj=longlat +datum=WGS84"))
+# store time as hms
+record.table.lyru$Time.Corrected <- hms(record.table.lyru$Time)
+# convert time from HH:MM:SS to decimal hours (HH.HHHH or whatever)
+record.table.lyru$Time.Decimal <- record.table.lyru$Time.Corrected$hour + record.table.lyru$Time.Corrected$minute/60 + record.table.lyru$Time.Corrected$second/3600
+# scale time so that it is between 0 and 1 by dividing by 24
+record.table.lyru$Time.Scaled <- record.table.lyru$Time.Decimal / 24
+# convert scaled time (0 to 1) to radians (0 to 2pi)
+record.table.lyru$Time.Radians <- record.table.lyru$Time.Scaled * 2 * pi
+# calculate suntime using function from overlap package, and coordinates and dates as formatted above
+record.table.lyru$Time.Sun <- sunTime(record.table.lyru$Time.Radians, record.table.lyru$Date, Coords)
+# plot coyote activity with and without foxlights
+records.bobcat.dogyes <- subset(record.table.lyru, Species == "LYRU" & Dog_Presence == "Y")
+records.bobcat.dogno <- subset(record.table.lyru, Species == "LYRU" & Dog_Presence == "N")
+# define overlap function
+multilines2 <-function (A, B, xscale = 24, linetype = c(1, 2), linecol = c("orange1", "cadetblue4"), n.grid = 128, kmax = 3, adjust = 1,
+                        ...) 
+{
+  bwA <- getBandWidth(A, kmax = kmax)/adjust
+  bwB <- getBandWidth(B, kmax = kmax)/adjust
+  if (is.na(bwA) || is.na(bwB)) 
+    stop("Bandwidth estimation failed.")
+  xsc <- if (is.na(xscale))
+    1
+  else xscale/(2 * pi)
+  xxRad <- seq(0, 2 * pi, length = n.grid)
+  xx <- xxRad * xsc
+  densA <- densityFit(A, xxRad, bwA)/xsc
+  densB <- densityFit(B, xxRad, bwB)/xsc
+  densOL <- pmin(densA, densB)
+  ylim <- c(0, max(densA, densB))
+  plot(0, 0, type = "n", ylim = ylim, xlim = range(xx), xlab = "Time", 
+       ylab = "Relative Bobcat Activity", xaxt = "n", ...)
+  if (is.na(xscale)) {
+    axis(1, at = c(0, pi/2, pi, 3 * pi/2, 2 * pi), labels = c("0", 
+                                                              expression(pi/2), expression(pi), expression(3 * 
+                                                                                                             pi/2), expression(2 * pi)))
+  }
+  else if (xscale == 24) {
+    axis(1, at = c(0, 6, 12, 18, 24), labels = c("Midnight", 
+                                                 "Sunrise", "Noon", "Sunset", "Midnight"))
+  }
+  else {
+    axis(1)
+  }
+  lines(xx, densA, lty = linetype[1], col = linecol[1], lwd = 2)
+  lines(xx, densB, lty = linetype[2], col = linecol[2], lwd = 2)
+  return(invisible(list(x = xx, densityA = densA, densityB = densB)))
+}
+watson.two.test(records.bobcat.dogyes$Time.Sun, records.bobcat.dogno$Time.Sun)
+# plot bobcat activity with and without dogs
+records.bobcat.dogyes <- subset(record.table.lyru, Species == "LYRU" & Dog_Presence == "Y")
+records.bobcat.dogno <- subset(record.table.lyru, Species == "LYRU" & Dog_Presence == "N")
+# plot for bobcats
+multilines2(records.bobcat.dogyes$Time.Sun, records.bobcat.dogno$Time.Sun, main = "Bobcats w/ and w/o Dog Presence")
+legend('top', c("Yes Dogs", "No Dogs"), col = c("orange1", "cadetblue4"), lty=c(1,1), bty='n')
+#test significance
+# this will return the degree of overlap - area under the shared curve (where 0 is completely different and 1 is completely the same)
+(Dhats <- overlapEst(records.bobcat.dogyes$Time.Sun, records.bobcat.dogno$Time.Sun))
+# use Dhat4 (they are different formulas - this one is good for sample sizes >50)
+# then resample each one 10,000 times (bootstrapping)
+bs_time.dogyes <- resample(records.bobcat.dogyes$Time.Sun, 10000)
+bs_time.dogno <- resample(records.bobcat.dogno$Time.Sun, 10000)
+# now calculate the resulting bootstrapped overlap value
+# it should be pretty similar to the "true" value (I think it makes more sense to report the true value, with the bootstrapped confidence intervals)
+bsOut <- bootEst(bs_time.dogyes, bs_time.dogno)
+colMeans(bsOut) 
+# now calculate the 95% confidence interval - this takes a little while to run
+bs <- as.vector(bsOut[,2])
+(bsCI_inout <- bootCI(Dhats[2], bs)) 
+```
+```
+
+```{r}
+x <- subset(all.rai, Class == "Bobcat" & Camera == "G11")$RAI
+y <- mean(x, na.rm = TRUE)
+print(y)
+
+
+x <- subset(subset.rai, Season == "Winter" & Camera == "G11")$Bobcat_RAI
+y <- mean(x, na.rm = TRUE)
+print(y)
+
+```
+
+
+
 
