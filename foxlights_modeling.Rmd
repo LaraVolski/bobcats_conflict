@@ -95,6 +95,31 @@ rai.acrossphases$RAI <- rai.acrossphases$Detections / rai.acrossphases$Operation
 ```
 
 # Part 2 - Model selection
+```{r}
+#Determining normality
+shapiro.test(rai_bobcat_lv$RAI) # p = 6.143e-13 --> because the p value is < 0.05, it implies that the distribution of the data is significantly different from normal distribution. 
+shapiro.test(rai_bobcat_lv$Detections)
+
+library("ggpubr")
+ggdensity(rai_bobcat_lv$RAI) # NOT bell shaped!
+ggdensity(rai_bobcat_lv$Detections)
+
+# testing for overdispersion of the count data
+library("blmeco") 
+dispersion_glmer(reduced.model.lgd) #it shouldn't be over 1.4, which it isn't
+
+overdisp_fun <- function(model) {
+rdf <- df.residual(model)
+rp <- residuals(model,type="pearson")
+Pearson.chisq <- sum(rp^2)
+prat <- Pearson.chisq/rdf
+pval <- pchisq(Pearson.chisq, df=rdf, lower.tail=FALSE)
+c(chisq=Pearson.chisq,ratio=prat,rdf=rdf,p=pval)
+}
+
+overdisp_fun(reduced.model.foxlights) # ratio is 5.920365. It is overdispersed if the ratio is larger than 1, which it is not
+```
+
 
 Make candidate models and evaluate them!
 
@@ -277,7 +302,7 @@ AIC(foxlights.full.model) ## AIC is 437.096
 vif(foxlights.full.model) ## All except Foxlight, Sheep_Presence, and Dogs_RAI have VIF > 2
 
 ## Reduced lmer model
-reduced.model.foxlights <- lmer(Detections ~ Foxlight + Sheep_Presence + Dog_RAI + Elevation +
+reduced.model.foxlights <- lmer(RAI ~ Foxlight + Sheep_Presence + Dog_RAI + Elevation +
                      Rugged.121  + Slope + Phase +
                      road.dist.clean + viewshed.clean +
                         offset(log(Operation)) + (1|Camera),

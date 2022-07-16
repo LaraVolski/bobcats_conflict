@@ -11,8 +11,52 @@ output: html_document
 
 subset.rai <- read.csv("subset.rai.csv")
 
+# Deciding if GLMER or LMER
+# testing for normality
+shapiro.test(subset.rai$Bobcat_RAI) # p < 2.2e-16 --> because the p value is < 0.05, it implies that the distribution of the data is significantly different from normal distribution. 
+shapiro.test(subset.rai$Count)
+
+library("ggpubr")
+ggdensity(subset.rai$Bobcat_RAI) # NOT bell shaped!
+ggdensity(subset.rai$Count)
+
+# testing for overdispersion of the count data
+library("blmeco") 
+dispersion_glmer(reduced.model.lgd) #it shouldn't be over 1.4, which it isn't
+
+
+overdisp_fun <- function(model) {
+rdf <- df.residual(model)
+rp <- residuals(model,type="pearson")
+Pearson.chisq <- sum(rp^2)
+prat <- Pearson.chisq/rdf
+pval <- pchisq(Pearson.chisq, df=rdf, lower.tail=FALSE)
+c(chisq=Pearson.chisq,ratio=prat,rdf=rdf,p=pval)
+}
+
+overdisp_fun(reduced.model.lgd) # ratio is 9.398e-04. It is overdispersed if the ratio is larger than 1, which it is not
+
+summary(reduced.model.lgd, correlation=TRUE)
+
+dispersion_glmer<- function(modelglmer)
+{   
+# computing  estimated scale  ( binomial model)
+#following  D. Bates :
+#That quantity is the square root of the penalized residual sum of
+#squares divided by n, the number of observations, evaluated as:
+
+    n <- length(modelglmer@resid)
+
+    return(  sqrt( sum(c(modelglmer@resid, modelglmer@u) ^2) / n ) )
+}
+
+dispersion_glmer(reduced.model.lgd)
+
+```
+
+```{r}
 # Step 1 - Set up a model with all the variables of interest.
-full.model.lgd <- lmer(Count ~ Sheep_RAI + Sheep + Dog_RAI + Dogs_Scaled + Fire + Season + rugged81.clean + rugged121.clean + road.dist.clean + elevation.clean + slope.clean + vegetation.coarser.clean + (1|Camera),
+full.model.lgd <- lmer(Bobcat_RAI ~ Sheep_RAI + Sheep + Dog_RAI + Dogs_Scaled + Fire + Season + rugged81.clean + rugged121.clean + road.dist.clean + elevation.clean + slope.clean + vegetation.coarser.clean + (1|Camera),
                       data = subset.rai, na.action = "na.fail")
 
 AIC(full.model.lgd) ## AIC is 5646.306
@@ -33,6 +77,13 @@ dredge.reduced.model.lgd <- dredge(reduced.model.lgd)
 library(sjPlot)
 r.squaredGLMM(reduced.model.lgd)
 tab_model(reduced.model.lgd)
+
+
+
+top.lgd.model <- lmer(Bobcat_RAI ~ rugged121.clean + Dog_RAI + Season + (1|Camera),
+                      data = subset.rai, na.action = "na.fail")
+
+summary(top.lgd.model)
 ```
 # Part 2 - Model selection
 

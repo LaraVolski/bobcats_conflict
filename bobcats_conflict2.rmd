@@ -481,8 +481,7 @@ sum(x, na.rm = TRUE) # Sum is 698 bobcats
 # Examining Seasonality
 ggplot(subset.rai, aes(x = Season, y = Bobcat_RAI, fill = Season)) +
   geom_col() +
-  labs(x ="Seasonal", y = "Relative Bobcat Activity") +
-  ggsave("figures/bobcat_seasonality.png", width = 4, height = 4)
+  labs(x ="Seasonal", y = "Relative Bobcat Activity")
 
 # Bobcat Diel Activity Pattern -- need to get code
 
@@ -490,33 +489,27 @@ ggplot(subset.rai, aes(x = Season, y = Bobcat_RAI, fill = Season)) +
 
 ##rugged81.clean
 ggplot(subset.rai, aes(x = rugged81.clean, y = Bobcat_RAI)) +
-  geom_smooth(method = lm) +
-   ggsave("figures/rugged81.png", width = 4, height = 4)
+  geom_smooth(method = lm)
 
 ##rugged121.clean
 ggplot(subset.rai, aes(x = rugged121.clean, y = Bobcat_RAI)) +
-  geom_smooth(method = lm) +
-  ggsave("figures/rugged121.png", width = 4, height = 4)
+  geom_smooth(method = lm)
 
 ##road.dist.clean
 ggplot(subset.rai, aes(x = road.dist.clean, y = Bobcat_RAI)) +
-  geom_smooth(method = lm) +
-  ggsave("figures/roaddist.png", width = 4, height = 4)
+  geom_smooth(method = lm)
 
 #elevation.clean
 ggplot(subset.rai, aes(x = elevation.clean, y = Bobcat_RAI)) +
-  geom_smooth(method = lm) +
-  ggsave("figures/elevation.png", width = 4, height = 4)
+  geom_smooth(method = lm)
 
 #slope.clean
 ggplot(subset.rai, aes(x = slope.clean, y = Bobcat_RAI)) +
-  geom_smooth(method = lm) +
-  ggsave("figures/slope.png", width = 4, height = 4)
+  geom_smooth(method = lm)
 
 #vegetation.coarser.clean (discrete!)
 ggplot(subset.rai, aes(x = vegetation.coarser.clean, y = Bobcat_RAI)) +
-  geom_bar(stat = "identity") +
-  ggsave("figures/veg.png", width = 4, height = 4)
+  geom_bar(stat = "identity")
 
 
 ## Graph Bobcat RAI by Sheep Presence
@@ -527,20 +520,21 @@ ggplot(subset.rai, aes(x = Sheep, y = Bobcat_RAI, fill = Sheep)) +
   scale_x_discrete(labels = c("No", "Yes")) +
   scale_y_log10() +
   labs(x ="Sheep Present", y = "Relative Bobcat Activity (detections/month)") +
-  scale_fill_manual(values=c("cadetblue4", "orange1")) +
-  ggsave("figures/bobcat_sheepYorN.png", width = 4, height = 4)
+  scale_fill_manual(values=c("cadetblue4", "orange1"))
 
 ## Graph Bobcat RAI by Sheep Presence and Fire
-ggplot(subset.rai, aes(x = Sheep, y = Bobcat_RAI, fill = Sheep)) +
+bobcat.rai.fire <- read.csv("subset.rai.oneyearbeforeandafterfire.csv")
+
+ggplot(bobcat.rai.fire, aes(x = Sheep, y = Bobcat_RAI, fill = Sheep)) +
   geom_boxplot() +
   theme_bw() +
   theme(legend.position = "none") +
   scale_x_discrete(labels = c("Ungrazed", "Grazed")) +
   scale_y_log10() +
   facet_wrap(~ Fire) +
-  # labs(x ="Before and After Fire", y = "Relative Bobcat Activity (detections/month)") +
-  scale_fill_manual(values=c("cadetblue4", "orange1")) +
-  ggsave("figures/bobcat_sheep_fire.png", width = 4, height = 4)
+  labs(x ="Before and After Fire", y = "Relative Bobcat Activity (detections/month)") +
+  scale_fill_manual(values=c("cadetblue4", "orange1")) 
+  ggsave(file = "bobcat.rai.by.fire.and.sheep.png")
 
 ```
 
@@ -557,8 +551,7 @@ ggplot(rai_bobcat_lv, aes(x = Foxlight, y = RAI*35, fill = Foxlight)) +
  # geom_jitter() +
   labs(x ="Foxlight", y = "Relative Bobcat Activity (detections/phase)") +
   ## scale_y_continuous(labels = mult_format()) +
-  scale_fill_manual(values=c("cadetblue4", "orange1")) + 
-  ggsave("figures/bobcat_foxlight.png", width = 4, height = 4)
+  scale_fill_manual(values=c("cadetblue4", "orange1"))
 
 # Bobcats and habituation
 habituation.by.rai.foxY <- read.csv("lyru.habituation.foxlights.csv", header=T)
@@ -566,8 +559,7 @@ habituation.by.rai.foxY <- read.csv("lyru.habituation.foxlights.csv", header=T)
 ggplot(habituation.by.rai.foxY, aes(x = Phase, y = LYRU.RAI)) +
   geom_boxplot(fill = "cadetblue4") +
   labs(title = "Bobcat Acivity by Active Foxlight Phase",
-       x = "First, Second, Third, Fourth, or Fifth Time a Foxlight was Active at a Site", y = "Bobcat RAI") +
-  ggsave("figures/bobcat_foxlight_habituation.png", width = 6, height = 4)
+       x = "First, Second, Third, Fourth, or Fifth Time a Foxlight was Active at a Site", y = "Bobcat RAI")
 
 medians.by.week <- read.csv("lyru.medians.csv", header=T)
 ggplot(data = medians.by.week, aes(x = Week, y = Median, fill = Foxlight)) +
@@ -579,27 +571,24 @@ ggplot(data = medians.by.week, aes(x = Week, y = Median, fill = Foxlight)) +
         legend.title = element_text(face="bold", size = 10)) +
 labs(x ="Week", y = "Median Bobcat Detections") +
   scale_fill_manual(values=c("cadetblue4", "orange1")) + 
-  theme_bw() +
-  ggsave("figures/bobcat_weekly_detections.png", width = 4, height = 4)
+  theme_bw()
 
 # Bobcat Diel Patterns (in other R project)
 
 # Bobcat Env Variables
 ggplot(rai_bobcat_lv, aes(x = Rugged.121, y = RAI)) +
-  geom_smooth(method = lm) +
-  ggsave("figures/rugged121_foxlightsdata.png", width = 4, height = 4)
+  geom_smooth(method = lm)
 
 ggplot(rai_bobcat_lv, aes(x = Elevation, y = RAI)) +
-  geom_smooth(method = lm) +
-  ggsave("figures/elevation_foxlightsdata.png", width = 4, height = 4)
+  geom_smooth(method = lm) 
 
 ggplot(rai_bobcat_lv, aes(x = road.dist.clean, y = RAI)) +
-  geom_smooth(method = lm) +
-  ggsave("figures/road.dist.clean_foxlightsdata.png", width = 4, height = 4)
+  geom_smooth(method = lm) 
 
 ggplot(rai_bobcat_lv, aes(x = Slope, y = RAI)) +
-  geom_smooth(method = lm) +
-  ggsave("figures/slope_foxlightsdata.png", width = 4, height = 4)
+  geom_smooth(method = lm)
+
+histogram(RAI, data = rai_bobcat_lv)
 
 ```
 
@@ -608,12 +597,14 @@ ggplot(rai_bobcat_lv, aes(x = Slope, y = RAI)) +
 
 ## Question 1: How do bobcat detections vary by LGD presence?
 ```{r}
+
 # Dog (Y/N) and Bobcat RAI using Grid Camera Survey Data
 ggplot(subset.rai, aes(x = Dog, y = Bobcat_RAI, fill = Dog)) +
   geom_boxplot(alpha=2) +
   scale_x_discrete(labels = c("No", "Yes")) +
   labs(x ="Livestock Guardian Dog Presence", y = "Relative Bobcat Activity (detections/month)") +
   scale_fill_manual(values=c("cadetblue4", "orange1")) 
+ggsave("dog.and.bobcat.rai.boxplot.png")
 
 # Sheep (Y/N) and Bobcat RAI using Grid Camera Survey Data
 ggplot(subset.rai, aes(x = Sheep, y = Bobcat_RAI, fill = Sheep)) +
@@ -621,6 +612,7 @@ ggplot(subset.rai, aes(x = Sheep, y = Bobcat_RAI, fill = Sheep)) +
   scale_x_discrete(labels = c("No", "Yes")) +
   labs(x ="Sheep Presence", y = "Relative Bobcat Activity (detections/month)") +
   scale_fill_manual(values=c("cadetblue4", "orange1")) 
+ggsave("sheeo.and.bobcat.rai.boxplot.lgd.png")
 
 # Sheep (Y/N) and Bobcat RAI using Foxlight Data
 ggplot(rai_bobcat_lv, aes(x = Sheep_Presence, y = RAI, fill = Sheep_Presence)) +
@@ -628,52 +620,65 @@ ggplot(rai_bobcat_lv, aes(x = Sheep_Presence, y = RAI, fill = Sheep_Presence)) +
   scale_x_discrete(labels = c("No", "Yes")) +
   labs(x ="Sheep Presence", y = "Relative Bobcat Activity (detections/month)") +
   scale_fill_manual(values=c("cadetblue4", "orange1")) 
+ggsave("sheeo.and.bobcat.rai.boxplot.foxlights.png")
 
 # Individual Dog Count using Grid Camera Survey data
 ggplot(data = subset.rai, aes(x = Individual_Dog, y = Bobcat_RAI)) +
   geom_smooth(method="loess", se=F) +
+  geom_point() +
   labs(x ="Dogs", y = "Bobcat RAI")
-
-ggplot(subset.rai, aes(x = Individual_Dog, y = Count)) +
-  geom_col(fill = "cadetblue4") +
-  labs(x = "Dogs", y = "Bobcat Detections")
+ggsave("indv.dog.geomsmooth.lgd.png")
 
 ggplot(subset.rai, aes(x = Individual_Dog, y = Bobcat_RAI, group = Individual_Dog)) +
   geom_boxplot(alpha=2, fill = "cadetblue4") +
   labs(x ="Dogs", y = "Bobcat RAI") +
   theme(legend.position = "none")
+ggsave("indv.dog.boxplot.lgd.png")
 
 # Individual Dog Count using Foxlight Data
 ggplot(data = rai_bobcat_lv, aes(x = Ind_Dogs, y = RAI)) +
   geom_point(aes(col=Foxlight)) +
   geom_smooth(method="loess", se=F) +
   labs(x ="Dogs", y = "Bobcat RAI")
+ggsave("indv.dog.geomsmooth.foxlights.png")
 
-ggplot(rai_bobcat_lv, aes(x = Ind_Dogs, y = Detections)) +
+ggplot(rai_bobcat_lv, aes(x = Ind_Dogs, y = RAI)) +
   geom_col(fill = "cadetblue4") +
   labs(x = "Dogs", y = "Bobcat Detections")
 
-ggplot(data = rai_bobcat_lv, aes(x = Ind_Dogs, y = RAI * 35, group = Ind_Dogs)) +
+ggplot(data = rai_bobcat_lv, aes(x = Ind_Dogs, y = RAI, group = Ind_Dogs)) +
   geom_boxplot(alpha=2, fill = "cadetblue4") +
   labs(x ="Dogs", y = "Bobcat RAI") +
-  theme(legend.position = "none") +
-  ggsave("figures/bobcat_boxplot_individualdogs.png", width = 4, height = 4)
+  theme(legend.position = "none")
+ggsave("indv.dog.boxplot.foxlights.png")
+
+#Plot of RAI Bobcat vs RAI LGD
+ggplot(subset.rai, aes(x = Bobcat_RAI, y = Dog_RAI)) +
+geom_smooth(method="lm")
+ggsave("bobcat.rai.by.dog.rai.lgd.png")
+
+ggplot(rai_bobcat_lv, aes(x = RAI, y = Dog_RAI)) +
+geom_smooth(method="lm")
+ggsave("bobcat.rai.by.dog.rai.foxlights.png")
+
+#trying to make a side by side boxplot  over time
+ggplot(all.rai, aes(x = Month, y = RAI)) +
+geom_boxplot() +
+facet_wrap(~ subset(Class == "Bobcat" & "Dog"))
+
 ```
+# Diel Graph
 
-## Question 2 - Diel Graph for LGD
-```{r}
+ Question 5: Diel Patterns and Dogs
+```{r q5.dailyactivity.bobcat}
 
-write.csv(record.table.all,"record.table.all.csv", row.names = TRUE)
+record.table.lgd <- read.csv("lgd.diel.graph.record.table.no.dogs.csv")
+record.table.lgd$Date <- format(as.Date(record.table.lgd$Date), "%m-%d-%Y")
 
-
-
-
-## taken from foxlights code
-# Bobcat Diel Patterns w/ and w/o LGD
-record.table.lyru <- read.csv("record.table.15min1.csv")
 # Setting up
 # specify date format
-record.table.lyru$Date <- as.POSIXct(record.table.lyru$Date)
+record.table.lgd$Date <- as.POSIXct(record.table.lgd$Date)
+
 # scale clock time to solar time
 coords <- matrix(c(-123.079, 39.0013), nrow=1) # note it is c(longitude, latitude)
 Coords <- sp::SpatialPoints(coords,
@@ -747,19 +752,6 @@ colMeans(bsOut)
 # now calculate the 95% confidence interval - this takes a little while to run
 bs <- as.vector(bsOut[,2])
 (bsCI_inout <- bootCI(Dhats[2], bs)) 
-```
-```
-
-```{r}
-x <- subset(all.rai, Class == "Bobcat" & Camera == "G11")$RAI
-y <- mean(x, na.rm = TRUE)
-print(y)
-
-
-x <- subset(subset.rai, Season == "Winter" & Camera == "G11")$Bobcat_RAI
-y <- mean(x, na.rm = TRUE)
-print(y)
-
 ```
 
 
