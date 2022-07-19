@@ -26,6 +26,11 @@ library(here)
 library(MASS)
 library(lme4)
 library(car)
+library(circular)
+library(overlap)
+library(maptools)
+library(lubridate)
+library(ggpattern)
 ```
 
 ### 1.2 Read in CSVs
@@ -558,7 +563,7 @@ habituation.by.rai.foxY <- read.csv("lyru.habituation.foxlights.csv", header=T)
 
 ggplot(habituation.by.rai.foxY, aes(x = Phase, y = LYRU.RAI)) +
   geom_boxplot(fill = "cadetblue4") +
-  labs(title = "Bobcat Acivity by Active Foxlight Phase",
+  labs(title = "Bobcat Activity by Active Foxlight Phase",
        x = "First, Second, Third, Fourth, or Fifth Time a Foxlight was Active at a Site", y = "Bobcat RAI")
 
 medians.by.week <- read.csv("lyru.medians.csv", header=T)
@@ -588,8 +593,6 @@ ggplot(rai_bobcat_lv, aes(x = road.dist.clean, y = RAI)) +
 ggplot(rai_bobcat_lv, aes(x = Slope, y = RAI)) +
   geom_smooth(method = lm)
 
-histogram(RAI, data = rai_bobcat_lv)
-
 ```
 
 
@@ -597,11 +600,11 @@ histogram(RAI, data = rai_bobcat_lv)
 
 ## Question 1: How do bobcat detections vary by LGD presence?
 ```{r}
-
 # Dog (Y/N) and Bobcat RAI using Grid Camera Survey Data
 ggplot(subset.rai, aes(x = Dog, y = Bobcat_RAI, fill = Dog)) +
   geom_boxplot(alpha=2) +
   scale_x_discrete(labels = c("No", "Yes")) +
+  scale_y_log10() +
   labs(x ="Livestock Guardian Dog Presence", y = "Relative Bobcat Activity (detections/month)") +
   scale_fill_manual(values=c("cadetblue4", "orange1")) 
 ggsave("dog.and.bobcat.rai.boxplot.png")
@@ -612,44 +615,14 @@ ggplot(subset.rai, aes(x = Sheep, y = Bobcat_RAI, fill = Sheep)) +
   scale_x_discrete(labels = c("No", "Yes")) +
   labs(x ="Sheep Presence", y = "Relative Bobcat Activity (detections/month)") +
   scale_fill_manual(values=c("cadetblue4", "orange1")) 
-ggsave("sheeo.and.bobcat.rai.boxplot.lgd.png")
-
-# Sheep (Y/N) and Bobcat RAI using Foxlight Data
-ggplot(rai_bobcat_lv, aes(x = Sheep_Presence, y = RAI, fill = Sheep_Presence)) +
-  geom_boxplot(alpha=2) +
-  scale_x_discrete(labels = c("No", "Yes")) +
-  labs(x ="Sheep Presence", y = "Relative Bobcat Activity (detections/month)") +
-  scale_fill_manual(values=c("cadetblue4", "orange1")) 
-ggsave("sheeo.and.bobcat.rai.boxplot.foxlights.png")
+ggsave("sheep.and.bobcat.rai.boxplot.lgd.png")
 
 # Individual Dog Count using Grid Camera Survey data
-ggplot(data = subset.rai, aes(x = Individual_Dog, y = Bobcat_RAI)) +
-  geom_smooth(method="loess", se=F) +
-  geom_point() +
-  labs(x ="Dogs", y = "Bobcat RAI")
-ggsave("indv.dog.geomsmooth.lgd.png")
-
-ggplot(subset.rai, aes(x = Individual_Dog, y = Bobcat_RAI, group = Individual_Dog)) +
+ggplot(data = subset.rai, aes(x = Individual_Dog, y = Bobcat_RAI, group = Individual_Dog)) +
   geom_boxplot(alpha=2, fill = "cadetblue4") +
   labs(x ="Dogs", y = "Bobcat RAI") +
-  theme(legend.position = "none")
-ggsave("indv.dog.boxplot.lgd.png")
-
-# Individual Dog Count using Foxlight Data
-ggplot(data = rai_bobcat_lv, aes(x = Ind_Dogs, y = RAI)) +
-  geom_point(aes(col=Foxlight)) +
-  geom_smooth(method="loess", se=F) +
-  labs(x ="Dogs", y = "Bobcat RAI")
-ggsave("indv.dog.geomsmooth.foxlights.png")
-
-ggplot(rai_bobcat_lv, aes(x = Ind_Dogs, y = RAI)) +
-  geom_col(fill = "cadetblue4") +
-  labs(x = "Dogs", y = "Bobcat Detections")
-
-ggplot(data = rai_bobcat_lv, aes(x = Ind_Dogs, y = RAI, group = Ind_Dogs)) +
-  geom_boxplot(alpha=2, fill = "cadetblue4") +
-  labs(x ="Dogs", y = "Bobcat RAI") +
-  theme(legend.position = "none")
+  theme(legend.position = "none") +
+  scale_y_log10()
 ggsave("indv.dog.boxplot.foxlights.png")
 
 #Plot of RAI Bobcat vs RAI LGD
@@ -661,11 +634,6 @@ ggplot(rai_bobcat_lv, aes(x = RAI, y = Dog_RAI)) +
 geom_smooth(method="lm")
 ggsave("bobcat.rai.by.dog.rai.foxlights.png")
 
-#trying to make a side by side boxplot  over time
-ggplot(all.rai, aes(x = Month, y = RAI)) +
-geom_boxplot() +
-facet_wrap(~ subset(Class == "Bobcat" & "Dog"))
-
 ```
 # Diel Graph
 
@@ -673,7 +641,8 @@ facet_wrap(~ subset(Class == "Bobcat" & "Dog"))
 ```{r q5.dailyactivity.bobcat}
 
 record.table.lgd <- read.csv("lgd.diel.graph.record.table.no.dogs.csv")
-record.table.lgd$Date <- format(as.Date(record.table.lgd$Date), "%m-%d-%Y")
+
+record.table.lgd$Date <- format(as.Date(as.character(record.table.lgd$Date), "%m/%d/%y"))
 
 # Setting up
 # specify date format
@@ -684,18 +653,24 @@ coords <- matrix(c(-123.079, 39.0013), nrow=1) # note it is c(longitude, latitud
 Coords <- sp::SpatialPoints(coords,
                             proj4string=sp::CRS("+proj=longlat +datum=WGS84"))
 # store time as hms
-record.table.lyru$Time.Corrected <- hms(record.table.lyru$Time)
+record.table.lgd$Time.Corrected <- hms(record.table.lgd$Time)
+
 # convert time from HH:MM:SS to decimal hours (HH.HHHH or whatever)
-record.table.lyru$Time.Decimal <- record.table.lyru$Time.Corrected$hour + record.table.lyru$Time.Corrected$minute/60 + record.table.lyru$Time.Corrected$second/3600
+record.table.lgd$Time.Decimal <- record.table.lgd$Time.Corrected$hour + record.table.lgd$Time.Corrected$minute/60 + record.table.lgd$Time.Corrected$second/3600
+
 # scale time so that it is between 0 and 1 by dividing by 24
-record.table.lyru$Time.Scaled <- record.table.lyru$Time.Decimal / 24
+record.table.lgd$Time.Scaled <- record.table.lgd$Time.Decimal / 24
+
 # convert scaled time (0 to 1) to radians (0 to 2pi)
-record.table.lyru$Time.Radians <- record.table.lyru$Time.Scaled * 2 * pi
+record.table.lgd$Time.Radians <- record.table.lgd$Time.Scaled * 2 * pi
+
 # calculate suntime using function from overlap package, and coordinates and dates as formatted above
-record.table.lyru$Time.Sun <- sunTime(record.table.lyru$Time.Radians, record.table.lyru$Date, Coords)
+record.table.lgd$Time.Sun <- sunTime(record.table.lgd$Time.Radians, record.table.lgd$Date, Coords)
+
 # plot coyote activity with and without foxlights
-records.bobcat.dogyes <- subset(record.table.lyru, Species == "LYRU" & Dog_Presence == "Y")
-records.bobcat.dogno <- subset(record.table.lyru, Species == "LYRU" & Dog_Presence == "N")
+records.bobcat.sheepyes <- subset(record.table.lgd, Species == "Bobcat" & Sheep == "Y")
+records.bobcat.sheepno <- subset(record.table.lgd, Species == "Bobcat" & Sheep == "N")
+
 # define overlap function
 multilines2 <-function (A, B, xscale = 24, linetype = c(1, 2), linecol = c("orange1", "cadetblue4"), n.grid = 128, kmax = 3, adjust = 1,
                         ...) 
@@ -731,27 +706,42 @@ multilines2 <-function (A, B, xscale = 24, linetype = c(1, 2), linecol = c("oran
   lines(xx, densB, lty = linetype[2], col = linecol[2], lwd = 2)
   return(invisible(list(x = xx, densityA = densA, densityB = densB)))
 }
-watson.two.test(records.bobcat.dogyes$Time.Sun, records.bobcat.dogno$Time.Sun)
+
+watson.two.test(records.bobcat.sheepyes$Time.Sun, records.bobcat.sheepno$Time.Sun)
+
 # plot bobcat activity with and without dogs
-records.bobcat.dogyes <- subset(record.table.lyru, Species == "LYRU" & Dog_Presence == "Y")
-records.bobcat.dogno <- subset(record.table.lyru, Species == "LYRU" & Dog_Presence == "N")
+records.bobcat.sheepyes <- subset(record.table.lgd, Species == "Bobcat" & Sheep == "Y")
+records.bobcat.sheepno <- subset(record.table.lgd, Species == "Bobcat" & Sheep == "N")
+
 # plot for bobcats
-multilines2(records.bobcat.dogyes$Time.Sun, records.bobcat.dogno$Time.Sun, main = "Bobcats w/ and w/o Dog Presence")
-legend('top', c("Yes Dogs", "No Dogs"), col = c("orange1", "cadetblue4"), lty=c(1,1), bty='n')
+multilines2(records.bobcat.sheepyes$Time.Sun, records.bobcat.sheepno$Time.Sun, main = "Bobcats w/ and w/o Sheep & LGD Presence")
+legend('top', c("Yes Sheep & LGD", "No Sheep & LGD"), col = c("orange1", "cadetblue4"), lty=c(1,1), bty='n')
+
 #test significance
 # this will return the degree of overlap - area under the shared curve (where 0 is completely different and 1 is completely the same)
-(Dhats <- overlapEst(records.bobcat.dogyes$Time.Sun, records.bobcat.dogno$Time.Sun))
+(Dhats <- overlapEst(records.bobcat.sheepyes$Time.Sun, records.bobcat.sheepno$Time.Sun))
 # use Dhat4 (they are different formulas - this one is good for sample sizes >50)
 # then resample each one 10,000 times (bootstrapping)
-bs_time.dogyes <- resample(records.bobcat.dogyes$Time.Sun, 10000)
-bs_time.dogno <- resample(records.bobcat.dogno$Time.Sun, 10000)
+bs_time.sheepyes <- resample(records.bobcat.sheepyes$Time.Sun, 10000)
+bs_time.sheepno <- resample(records.bobcat.sheepno$Time.Sun, 10000)
 # now calculate the resulting bootstrapped overlap value
 # it should be pretty similar to the "true" value (I think it makes more sense to report the true value, with the bootstrapped confidence intervals)
-bsOut <- bootEst(bs_time.dogyes, bs_time.dogno)
+bsOut <- bootEst(bs_time.sheepyes, bs_time.sheepno)
 colMeans(bsOut) 
 # now calculate the 95% confidence interval - this takes a little while to run
 bs <- as.vector(bsOut[,2])
 (bsCI_inout <- bootCI(Dhats[2], bs)) 
+
+#    Dhat1     Dhat4     Dhat5 
+#0.7919166 0.7910264 0.7571053 
+#    Dhat1     Dhat4     Dhat5 
+#0.7924268 0.7903629 0.7976098 
+#           lower     upper
+#norm   0.6859764 0.8974034
+#norm0  0.6853129 0.8967399
+#basic  0.6895368 0.9013974
+#basic0 0.6813189 0.8931796
+#perc   0.6806554 0.8925160
 ```
 
 

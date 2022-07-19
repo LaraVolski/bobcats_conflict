@@ -1,0 +1,90 @@
+---
+title: "Untitled"
+author: "Lara Volski"
+date: "2022-07-18"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+record.table.lgd <- read.csv("lgd.diel.graph.record.table.no.dogs.csv")
+
+record.table.lgd$Date <- format(as.Date(as.character(record.table.lgd$Date), "%m/%d/%y"))
+
+# Setting up
+# specify date format
+record.table.lgd$Date <- as.POSIXct(record.table.lgd$Date)
+
+# scale clock time to solar time
+coords <- matrix(c(-123.079, 39.0013), nrow=1) # note it is c(longitude, latitude)
+Coords <- sp::SpatialPoints(coords,
+                            proj4string=sp::CRS("+proj=longlat +datum=WGS84"))
+# store time as hms
+record.table.lgd$Time.Corrected <- hms(record.table.lgd$Time)
+
+# convert time from HH:MM:SS to decimal hours (HH.HHHH or whatever)
+record.table.lgd$Time.Decimal <- record.table.lgd$Time.Corrected$hour + record.table.lgd$Time.Corrected$minute/60 + record.table.lgd$Time.Corrected$second/3600
+
+# scale time so that it is between 0 and 1 by dividing by 24
+record.table.lgd$Time.Scaled <- record.table.lgd$Time.Decimal / 24
+
+# convert scaled time (0 to 1) to radians (0 to 2pi)
+record.table.lgd$Time.Radians <- record.table.lgd$Time.Scaled * 2 * pi
+
+# calculate suntime using function from overlap package, and coordinates and dates as formatted above
+record.table.lgd$Time.Sun <- sunTime(record.table.lgd$Time.Radians, record.table.lgd$Date, Coords)
+
+# plot coyote activity with and without foxlights
+records.bobcat.sheepyes <- subset(record.table.lgd, Species == "Bobcat" & Sheep == "Y")
+records.bobcat.sheepno <- subset(record.table.lgd, Species == "Bobcat" & Sheep == "N")
+
+# define overlap function
+multilines2 <-function (A, B, xscale = 24, linetype = c(1, 2), linecol = c("orange1", "cadetblue4"), n.grid = 128, kmax = 3, adjust = 1,
+                        ...) 
+{
+  bwA <- getBandWidth(A, kmax = kmax)/adjust
+  bwB <- getBandWidth(B, kmax = kmax)/adjust
+  if (is.na(bwA) || is.na(bwB)) 
+    stop("Bandwidth estimation failed.")
+  xsc <- if (is.na(xscale))
+    1
+  else xscale/(2 * pi)
+  xxRad <- seq(0, 2 * pi, length = n.grid)
+  xx <- xxRad * xsc
+  densA <- densityFit(A, xxRad, bwA)/xsc
+  densB <- densityFit(B, xxRad, bwB)/xsc
+  densOL <- pmin(densA, densB)
+  ylim <- c(0, max(densA, densB))
+  plot(0, 0, type = "n", ylim = ylim, xlim = range(xx), xlab = "Time", 
+       ylab = "Relative Bobcat Activity", xaxt = "n", ...)
+  if (is.na(xscale)) {
+    axis(1, at = c(0, pi/2, pi, 3 * pi/2, 2 * pi), labels = c("0", 
+                                                              expression(pi/2), expression(pi), expression(3 * 
+                                                                                                             pi/2), expression(2 * pi)))
+  }
+  else if (xscale == 24) {
+    axis(1, at = c(0, 6, 12, 18, 24), labels = c("Midnight", 
+                                                 "Sunrise", "Noon", "Sunset", "Midnight"))
+  }
+  else {
+    axis(1)
+  }
+  lines(xx, densA, lty = linetype[1], col = linecol[1], lwd = 2)
+  lines(xx, densB, lty = linetype[2], col = linecol[2], lwd = 2)
+  return(invisible(list(x = xx, densityA = densA, densityB = densB)))
+}
+
+watson.two.test(records.bobcat.sheepyes$Time.Sun, records.bobcat.sheepno$Time.Sun)
+
+# plot bobcat activity with and without dogs
+records.bobcat.sheepyes <- subset(record.table.lgd, Species == "Bobcat" & Sheep == "Y")
+records.bobcat.sheepno <- subset(record.table.lgd, Species == "Bobcat" & Sheep == "N")
+
+# plot for bobcats
+multilines2(records.bobcat.sheepyes$Time.Sun, records.bobcat.sheepno$Time.Sun, main = "Bobcats w/ and w/o Sheep & LGD Presence")
+legend('top', c("Yes Sheep & LGD", "No Sheep & LGD"), col = c("orange1", "cadetblue4"), lty=c(1,1), bty='n')
+
+multilines2(records.bobcat.sheepyes$Time.Sun, records.bobcat.sheepno$Time.Sun, main = "Bobcats w/ and w/o Sheep & LGD Presence")
+legend('top', c("Yes Sheep & LGD", "No Sheep & LGD"), col = c("orange1", "cadetblue4"), lty=c(1,1), bty='n')
+```
+

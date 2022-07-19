@@ -34,39 +34,26 @@ pval <- pchisq(Pearson.chisq, df=rdf, lower.tail=FALSE)
 c(chisq=Pearson.chisq,ratio=prat,rdf=rdf,p=pval)
 }
 
-overdisp_fun(reduced.model.lgd) # ratio is 9.398e-04. It is overdispersed if the ratio is larger than 1, which it is not
+overdisp_fun(reduced.model.lgd) # ratio is 0.815. It is overdispersed if the ratio is larger than 1, which it is not
 
 summary(reduced.model.lgd, correlation=TRUE)
-
-dispersion_glmer<- function(modelglmer)
-{   
-# computing  estimated scale  ( binomial model)
-#following  D. Bates :
-#That quantity is the square root of the penalized residual sum of
-#squares divided by n, the number of observations, evaluated as:
-
-    n <- length(modelglmer@resid)
-
-    return(  sqrt( sum(c(modelglmer@resid, modelglmer@u) ^2) / n ) )
-}
-
-dispersion_glmer(reduced.model.lgd)
 
 ```
 
 ```{r}
 # Step 1 - Set up a model with all the variables of interest.
-full.model.lgd <- lmer(Bobcat_RAI ~ Sheep_RAI + Sheep + Dog_RAI + Dogs_Scaled + Fire + Season + rugged81.clean + rugged121.clean + road.dist.clean + elevation.clean + slope.clean + vegetation.coarser.clean + (1|Camera),
+full.model.lgd <- lmer(Count ~ Sheep_RAI + Sheep + Dog_RAI + Dogs_Scaled + Fire + Season + rugged9.clean + rugged25.clean + rugged49.clean + rugged81.clean + rugged121.clean + road.dist.clean + elevation.clean + slope.clean + vegetation.coarser.clean + offset(log(Operation)) + (1|Camera),
                       data = subset.rai, na.action = "na.fail")
 
-AIC(full.model.lgd) ## AIC is 5646.306
-vif(full.model.lgd) ## Rugged81 has a slightly higher VIF, so I cut that one between the two ruggeds. Dogs_Scaled and Sheep_RAI were also cut based on which had the highest VIF.
+AIC(full.model.lgd) ## AIC is 5635.361
+vif(full.model.lgd) 
 
-reduced.model.lgd <- lmer(Count ~ Sheep + Dog_RAI + Fire + Season + rugged121.clean + road.dist.clean + elevation.clean + slope.clean + vegetation.coarser.clean + (1|Camera),
+
+reduced.model.lgd <- lmer(Count ~ Sheep + Dog_RAI + Fire + Season + rugged9.clean + rugged121.clean + road.dist.clean + elevation.clean + slope.clean + vegetation.coarser.clean + offset(log(Operation)) + (1|Camera),
                       data = subset.rai, na.action = "na.fail")
 
-AIC(reduced.model.lgd) ## AIC is 5636.532
-vif(reduced.model.lgd) ## VIF under 2 for all
+AIC(full.model.lgd) ## AIC is 5635.38
+vif(reduced.model.lgd) 
 
 #Now, to dredge! First install and load the MuMIn package
 install.packages("MuMIn")
@@ -74,16 +61,19 @@ library(MuMIn)
 #Then dredging is as simple as...
 dredge.reduced.model.lgd <- dredge(reduced.model.lgd)
 
-library(sjPlot)
-r.squaredGLMM(reduced.model.lgd)
-tab_model(reduced.model.lgd)
-
-
-
-top.lgd.model <- lmer(Bobcat_RAI ~ rugged121.clean + Dog_RAI + Season + (1|Camera),
+topmodel1 <- lmer(Count ~ rugged49.clean + Season + offset(log(Operation)) + (1|Camera),
                       data = subset.rai, na.action = "na.fail")
 
-summary(top.lgd.model)
+topmodel2 <- lmer(Count ~ rugged49.clean + Season + slope.clean + offset(log(Operation)) + (1|Camera),
+                      data = subset.rai, na.action = "na.fail")
+
+topmodel3 <- lmer(Count ~ Dog_RAI + rugged49.clean + Season + slope.clean + offset(log(Operation)) + (1|Camera),
+                      data = subset.rai, na.action = "na.fail")
+
+library(sjPlot)
+r.squaredGLMM(topmodel3)
+tab_model(topmodel3)
+
 ```
 # Part 2 - Model selection
 
