@@ -218,6 +218,10 @@ AIC = 329.9
 fit10 <- glmer.nb(Detections ~ rugged49.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
 summary(fit10)
 tab_model(fit10)
+
+fit10.1 <- glmer.nb(Detections ~ rugged49.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
+summary(fit10)
+tab_model(fit10)
 ```
 
 ### Foxlight * Elevation

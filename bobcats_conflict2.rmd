@@ -486,7 +486,9 @@ sum(x, na.rm = TRUE) # Sum is 698 bobcats
 # Examining Seasonality
 ggplot(subset.rai, aes(x = Season, y = Bobcat_RAI, fill = Season)) +
   geom_col() +
-  labs(x ="Seasonal", y = "Relative Bobcat Activity")
+  labs(x ="Seasonal", y = "Relative Bobcat Activity") +
+  theme_bw()
+  ggsave(file = "bobcat.seasonality.png", width = 4, height = 4)
 
 # Bobcat Diel Activity Pattern -- need to get code
 
@@ -540,6 +542,18 @@ ggplot(bobcat.rai.fire, aes(x = Sheep, y = Bobcat_RAI, fill = Sheep)) +
   labs(x ="Before and After Fire", y = "Relative Bobcat Activity (detections/month)") +
   scale_fill_manual(values=c("cadetblue4", "orange1")) 
   ggsave(file = "bobcat.rai.by.fire.and.sheep.png")
+  
+test <- read.csv("subset.rai.fire.year.csv")
+  ggplot(test, aes(x = Sheep, y = Bobcat_RAI, fill = Sheep)) +
+  geom_boxplot() +
+  theme_bw() +
+  theme(legend.position = "none") +
+  scale_x_discrete(labels = c("Ungrazed", "Grazed")) +
+  scale_y_log10() +
+  facet_wrap(~ Fire) +
+  labs(x ="Before and After Fire", y = "Relative Bobcat Activity (detections/month)") +
+  scale_fill_manual(values=c("cadetblue4", "orange1")) 
+  ggsave(file = "bobcat.rai.by.fire.and.sheep2.png")
 
 ```
 
