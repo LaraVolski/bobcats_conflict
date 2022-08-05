@@ -620,7 +620,8 @@ ggplot(subset.rai, aes(x = Dog, y = Bobcat_RAI, fill = Dog)) +
   scale_x_discrete(labels = c("No", "Yes")) +
   scale_y_log10() +
   labs(x ="Livestock Guardian Dog Presence", y = "Relative Bobcat Activity (detections/month)") +
-  scale_fill_manual(values=c("cadetblue4", "orange1")) 
+  scale_fill_manual(values=c("cadetblue4", "orange1")) +
+  theme_bw()
 ggsave("dog.and.bobcat.rai.boxplot.png")
 
 # Sheep (Y/N) and Bobcat RAI using Grid Camera Survey Data
@@ -636,8 +637,9 @@ ggplot(data = subset.rai, aes(x = Individual_Dog, y = Bobcat_RAI, group = Indivi
   geom_boxplot(alpha=2, fill = "cadetblue4") +
   labs(x ="Dogs", y = "Bobcat RAI") +
   theme(legend.position = "none") +
-  scale_y_log10()
-ggsave("indv.dog.boxplot.foxlights.png")
+  scale_y_log10() +
+  theme_bw()
+ggsave("indv.dog.boxplot.lgd.png")
 
 #Plot of RAI Bobcat vs RAI LGD
 ggplot(subset.rai, aes(x = Bobcat_RAI, y = Dog_RAI)) +
@@ -758,6 +760,99 @@ bs <- as.vector(bsOut[,2])
 #perc   0.6806554 0.8925160
 ```
 
+```{r}
+record.table.lgd2 <- read.csv("lgd.diel.graph.record.table.with.dogs.csv")
+
+record.table.lgd2$Date <- format(as.Date(as.character(record.table.lgd2$Date), "%m/%d/%y"))
+
+# Setting up
+# specify date format
+record.table.lgd2$Date <- as.POSIXct(record.table.lgd2$Date)
+
+# scale clock time to solar time
+coords <- matrix(c(-123.079, 39.0013), nrow=1) # note it is c(longitude, latitude)
+Coords <- sp::SpatialPoints(coords,
+                            proj4string=sp::CRS("+proj=longlat +datum=WGS84"))
+# store time as hms
+record.table.lgd2$Time.Corrected <- hms(record.table.lgd2$Time)
+
+# convert time from HH:MM:SS to decimal hours (HH.HHHH or whatever)
+record.table.lgd2$Time.Decimal <- record.table.lgd2$Time.Corrected$hour + record.table.lgd2$Time.Corrected$minute/60 + record.table.lgd2$Time.Corrected$second/3600
+
+# scale time so that it is between 0 and 1 by dividing by 24
+record.table.lgd2$Time.Scaled <- record.table.lgd2$Time.Decimal / 24
+
+# convert scaled time (0 to 1) to radians (0 to 2pi)
+record.table.lgd2$Time.Radians <- record.table.lgd2$Time.Scaled * 2 * pi
+
+# calculate suntime using function from overlap package, and coordinates and dates as formatted above
+record.table.lgd2$Time.Sun <- sunTime(record.table.lgd2$Time.Radians, record.table.lgd2$Date, Coords)
+
+# plot coyote activity with and without foxlights
+records.bobcat.bobcat <- subset(record.table.lgd2, Species == "Bobcat")
+records.bobcat.dog <- subset(record.table.lgd2, Species == "Dog")
+
+# define overlap function
+multilines2 <-function (A, B, xscale = 24, linetype = c(1, 2), linecol = c("orange1", "cadetblue4"), n.grid = 128, kmax = 3, adjust = 1,
+                        ...) 
+{
+  bwA <- getBandWidth(A, kmax = kmax)/adjust
+  bwB <- getBandWidth(B, kmax = kmax)/adjust
+  if (is.na(bwA) || is.na(bwB)) 
+    stop("Bandwidth estimation failed.")
+  xsc <- if (is.na(xscale))
+    1
+  else xscale/(2 * pi)
+  xxRad <- seq(0, 2 * pi, length = n.grid)
+  xx <- xxRad * xsc
+  densA <- densityFit(A, xxRad, bwA)/xsc
+  densB <- densityFit(B, xxRad, bwB)/xsc
+  densOL <- pmin(densA, densB)
+  ylim <- c(0, max(densA, densB))
+  plot(0, 0, type = "n", ylim = ylim, xlim = range(xx), xlab = "Time", 
+       ylab = "Relative Bobcat Activity", xaxt = "n", ...)
+  if (is.na(xscale)) {
+    axis(1, at = c(0, pi/2, pi, 3 * pi/2, 2 * pi), labels = c("0", 
+                                                              expression(pi/2), expression(pi), expression(3 * 
+                                                                                                             pi/2), expression(2 * pi)))
+  }
+  else if (xscale == 24) {
+    axis(1, at = c(0, 6, 12, 18, 24), labels = c("Midnight", 
+                                                 "Sunrise", "Noon", "Sunset", "Midnight"))
+  }
+  else {
+    axis(1)
+  }
+  lines(xx, densA, lty = linetype[1], col = linecol[1], lwd = 2)
+  lines(xx, densB, lty = linetype[2], col = linecol[2], lwd = 2)
+  return(invisible(list(x = xx, densityA = densA, densityB = densB)))
+}
+
+watson.two.test(records.bobcat.bobcat$Time.Sun, records.bobcat.dog$Time.Sun)
+
+# plot bobcat activity with and without dogs
+records.bobcat.bobcat <- subset(record.table.lgd2, Species == "Bobcat")
+records.bobcat.dog <- subset(record.table.lgd2, Species == "Dog")
+
+# plot for bobcats
+multilines2(records.bobcat.bobcat$Time.Sun, records.bobcat.dog$Time.Sun, main = "Bobcat Activity vs LGD Activity")
+legend('bottom', c("Bobcat Diel Pattern", "LGD Diel Pattern"), col = c("orange1", "cadetblue4"), lty=c(1,1), bty='n')
+
+#test significance
+# this will return the degree of overlap - area under the shared curve (where 0 is completely different and 1 is completely the same)
+(Dhats <- overlapEst(records.bobcat.bobcat$Time.Sun, records.bobcat.dog$Time.Sun))
+# use Dhat4 (they are different formulas - this one is good for sample sizes >50)
+# then resample each one 10,000 times (bootstrapping)
+bs_time.bobcat <- resample(records.bobcat.bobcat$Time.Sun, 10000)
+bs_time.dog <- resample(records.bobcat.dog$Time.Sun, 10000)
+# now calculate the resulting bootstrapped overlap value
+# it should be pretty similar to the "true" value (I think it makes more sense to report the true value, with the bootstrapped confidence intervals)
+bsOut <- bootEst(bs_time.bobcat, bs_time.dog)
+colMeans(bsOut) 
+# now calculate the 95% confidence interval - this takes a little while to run
+bs <- as.vector(bsOut[,2])
+(bsCI_inout <- bootCI(Dhats[2], bs))
+```
 
 
 

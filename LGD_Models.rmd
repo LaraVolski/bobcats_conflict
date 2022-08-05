@@ -52,7 +52,7 @@ vif(full.model.lgd)
 reduced.model.lgd <- lmer(Count ~ Sheep + Dog_RAI + Fire + Season + rugged9.clean + rugged121.clean + road.dist.clean + elevation.clean + slope.clean + vegetation.coarser.clean + offset(log(Operation)) + (1|Camera),
                       data = subset.rai, na.action = "na.fail")
 
-AIC(full.model.lgd) ## AIC is 5635.38
+AIC(reduced.model.lgd) ## AIC is 5622.88
 vif(reduced.model.lgd) 
 
 #Now, to dredge! First install and load the MuMIn package
@@ -61,7 +61,7 @@ library(MuMIn)
 #Then dredging is as simple as...
 dredge.reduced.model.lgd <- dredge(reduced.model.lgd)
 
-topmodel1 <- lmer(Count ~ rugged49.clean + Season + offset(log(Operation)) + (1|Camera),
+topmodel1 <- lmer(Count ~ rugged121.clean + Season + offset(log(Operation)) + (1|Camera),
                       data = subset.rai, na.action = "na.fail")
 
 topmodel2 <- lmer(Count ~ rugged49.clean + Season + slope.clean + offset(log(Operation)) + (1|Camera),

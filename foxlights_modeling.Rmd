@@ -219,9 +219,9 @@ fit10 <- glmer.nb(Detections ~ rugged49.clean + offset(log(Operation)) + (1|Came
 summary(fit10)
 tab_model(fit10)
 
-fit10.1 <- glmer.nb(Detections ~ rugged49.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
-summary(fit10)
-tab_model(fit10)
+fit10.1 <- glmer.nb(Detections ~ rugged121.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
+summary(fit10.1)
+tab_model(fit10.1)
 ```
 
 ### Foxlight * Elevation
