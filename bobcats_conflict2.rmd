@@ -485,10 +485,13 @@ sum(x, na.rm = TRUE) # Sum is 698 bobcats
 
 # Examining Seasonality
 ggplot(subset.rai, aes(x = Season, y = Bobcat_RAI, fill = Season)) +
-  geom_col() +
-  labs(x ="Seasonal", y = "Relative Bobcat Activity") +
+  stat_summary(geom = "bar", fun = mean, width = 0.6) +
+  geom_errorbar(stat = "summary", width = 0.5) +
+  geom_point(stat = "summary") +
+  labs(x ="Season", y = "Relative Bobcat Activity") +
   theme_bw()
   ggsave(file = "bobcat.seasonality.png", width = 4, height = 4)
+  
 
 # Bobcat Diel Activity Pattern -- need to get code
 
@@ -530,20 +533,8 @@ ggplot(subset.rai, aes(x = Sheep, y = Bobcat_RAI, fill = Sheep)) +
   scale_fill_manual(values=c("cadetblue4", "orange1"))
 
 ## Graph Bobcat RAI by Sheep Presence and Fire
-bobcat.rai.fire <- read.csv("subset.rai.oneyearbeforeandafterfire.csv")
-
-ggplot(bobcat.rai.fire, aes(x = Sheep, y = Bobcat_RAI, fill = Sheep)) +
-  geom_boxplot() +
-  theme_bw() +
-  theme(legend.position = "none") +
-  scale_x_discrete(labels = c("Ungrazed", "Grazed")) +
-  scale_y_log10() +
-  facet_wrap(~ Fire) +
-  labs(x ="Before and After Fire", y = "Relative Bobcat Activity (detections/month)") +
-  scale_fill_manual(values=c("cadetblue4", "orange1")) 
-  ggsave(file = "bobcat.rai.by.fire.and.sheep.png")
-  
 test <- read.csv("subset.rai.fire.year.csv")
+
   ggplot(test, aes(x = Sheep, y = Bobcat_RAI, fill = Sheep)) +
   geom_boxplot() +
   theme_bw() +
@@ -640,6 +631,13 @@ ggplot(data = subset.rai, aes(x = Individual_Dog, y = Bobcat_RAI, group = Indivi
   scale_y_log10() +
   theme_bw()
 ggsave("indv.dog.boxplot.lgd.png")
+
+ggplot(subset.rai, aes(x = Individual_Dog, y = Bobcat_RAI, group = Individual_Dog)) +
+  stat_summary(geom = "bar", fun = mean, width = 0.6) +
+  geom_errorbar(stat = "summary", width = 0.5) +
+  geom_point(stat = "summary") +
+  labs(x ="Dogs", y = "Bobcat RAI") +
+  theme_bw()
 
 #Plot of RAI Bobcat vs RAI LGD
 ggplot(subset.rai, aes(x = Bobcat_RAI, y = Dog_RAI)) +

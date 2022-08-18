@@ -1,0 +1,53 @@
+---
+title: "Lit Review"
+author: "Lara Volski"
+date: "2022-08-05"
+output: html_document
+---
+
+
+Included Studies
+```{r}
+slices <- c(7, 4, 23, 10, 17)
+lbls <- c("Review/Conflict Description", "Review/Tool Evaluation", "Empirical Study/Conflict Description", "Empirical Study/Tool", "Gray Literature")
+pie(slices, labels = lbls, main="Included Papers", col=c("steelblue2", "steelblue", "darkolivegreen3", "darkolivegreen4", "darkgrey"))
+```
+Cattle
+```{r}
+## Bobcats do not predate cattle
+slices <- c(2, 1)
+lbls <- c("Rancher Survey", "Camera Trap Observations")
+pie(slices, col=c("steelblue2", "darkgoldenrod1"))
+```
+Sheep/Goat
+```{r}
+## Bobcats predate sheep/goats
+slices <- c(10, 2, 2)
+pie(slices, col=c("darkolivegreen3", "steelblue2", "darkgoldenrod1"))
+
+## Bobcats do not predate sheep/goats
+slices <- c(2, 1, 1)
+pie(slices, col=c("steelblue2", "darkolivegreen3", "darkgoldenrod1"))
+```
+
+Poultry
+```{r}
+## Bobcats predate poultry
+slices <- c(2, 2, 1)
+pie(slices, col=c("steelblue2", "darkgoldenrod1", "darkolivegreen3"))
+
+## Bobcats do not predate poultry
+slices <- c(1)
+pie(slices, col=c("steelblue2"))
+```
+
+
+Creating a Stacked Bar Graph
+```{r}
+bobcat.paper.types <- read.csv("bobcat.paper.types.csv")
+
+
+ggplot(data=bobcat.paper.types, aes(x=Predate, y=Paper, fill=Type)) +
+  geom_bar(stat="identity")
+  ggsave(file = "testy.png")
+```

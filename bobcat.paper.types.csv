@@ -1,0 +1,16 @@
+﻿Predate,Paper,Type
+Bobcats Predate Cattle,0,
+Bobcats Do Not Predate Cattle,2,Camera Trap Observation
+Bobcats Do Not Predate Cattle,1,Producer Survey
+Bobcats Predate Sheep/Goats,10,Federal/State Reporting
+Bobcats Predate Sheep/Goats,2,Producer Survey
+Bobcats Predate Sheep/Goats,2,Field Research
+Bobcats Do Not Predate Sheep/Goats,2,Field Research
+Bobcats Do Not Predate Sheep/Goats,1,Federal/State Reporting
+Bobcats Do Not Predate Sheep/Goats,1,Producer Survey
+Bobcats Predate Poultry,2,Field Research
+Bobcats Predate Poultry,2,Federal/State Reporting
+Bobcats Predate Poultry,1,Producer Survey
+Bobcats Do Not Predate Poultry,4,Field Research
+Bobcats Predate Pets,1,Pet Owner Survey
+Bobcays Do Not Predate Pets,2,Field Research
