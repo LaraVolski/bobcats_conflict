@@ -17,24 +17,24 @@ Cattle
 ## Bobcats do not predate cattle
 slices <- c(2, 1)
 lbls <- c("Rancher Survey", "Camera Trap Observations")
-pie(slices, col=c("steelblue2", "darkgoldenrod1"))
+pie(slices, col=c("#53868B", "#FFA500"))
 ```
 Sheep/Goat
 ```{r}
 ## Bobcats predate sheep/goats
 slices <- c(10, 2, 2)
-pie(slices, col=c("darkolivegreen3", "steelblue2", "darkgoldenrod1"))
+pie(slices, col=c("#749665", "#53868B", "#FFA500"))
 
 ## Bobcats do not predate sheep/goats
 slices <- c(2, 1, 1)
-pie(slices, col=c("steelblue2", "darkolivegreen3", "darkgoldenrod1"))
+pie(slices, col=c("#53868B", "#749665", "#FFA500"))
 ```
 
 Poultry
 ```{r}
 ## Bobcats predate poultry
 slices <- c(2, 2, 1)
-pie(slices, col=c("steelblue2", "darkgoldenrod1", "darkolivegreen3"))
+pie(slices, col=c("#53868B", "#FFA500", "#749665"))
 
 ## Bobcats do not predate poultry
 slices <- c(1)
@@ -42,12 +42,18 @@ pie(slices, col=c("steelblue2"))
 ```
 
 
-Creating a Stacked Bar Graph
+Land Types in Studies
 ```{r}
-bobcat.paper.types <- read.csv("bobcat.paper.types.csv")
+slices <- c(12, 5, 2, 5, 9)
+pie(slices, col=c("#53868B", "#FFA500", "#749665", "darkslategray3", "rosybrown1"))
 
 
-ggplot(data=bobcat.paper.types, aes(x=Predate, y=Paper, fill=Type)) +
-  geom_bar(stat="identity")
-  ggsave(file = "testy.png")
+slices <- c(5, 0, 8)
+pie(slices, col=c("steelblue3", "steelblue3", "#53868B"))
+```
+Attitudes
+```{r}
+slices <- c(5, 1, 1, 1)
+pie(slices, col=c("#53868B", "#FFA500", "#749665", "darkslategray3"))
+
 ```

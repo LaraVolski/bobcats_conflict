@@ -11,6 +11,9 @@ output: html_document
 
 subset.rai <- read.csv("subset.rai.csv")
 
+as.character(subset.rai$Individual_Dog)
+class(subset.rai$Individual_Dog)
+
 # Deciding if GLMER or LMER
 # testing for normality
 shapiro.test(subset.rai$Bobcat_RAI) # p < 2.2e-16 --> because the p value is < 0.05, it implies that the distribution of the data is significantly different from normal distribution. 
