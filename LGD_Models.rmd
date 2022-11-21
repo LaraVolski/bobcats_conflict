@@ -45,18 +45,23 @@ summary(reduced.model.lgd, correlation=TRUE)
 
 ```{r}
 # Step 1 - Set up a model with all the variables of interest.
-full.model.lgd <- lmer(Count ~ Sheep_RAI + Sheep + Dog_RAI + Dogs_Scaled + Fire + Season + rugged9.clean + rugged25.clean + rugged49.clean + rugged81.clean + rugged121.clean + road.dist.clean + elevation.clean + slope.clean + vegetation.coarser.clean + offset(log(Operation)) + (1|Camera),
-                      data = subset.rai, na.action = "na.fail")
+full.model.lgd <- lmer(Count ~ Sheep_RAI + Sheep + Dog_RAI + Dogs_Scaled + Fire + Season + rugged9.clean + rugged25.clean + rugged49.clean + rugged81.clean + rugged121.clean + road.dist.clean + elevation.clean + slope.clean + vegetation.coarser.clean + offset(log(Operation)) + (1|Camera), data = subset.rai, na.action = "na.fail")
+
 
 AIC(full.model.lgd) ## AIC is 5635.361
 vif(full.model.lgd) 
 
 
-reduced.model.lgd <- lmer(Count ~ Sheep + Dog_RAI + Fire + Season + rugged9.clean + rugged121.clean + road.dist.clean + elevation.clean + slope.clean + vegetation.coarser.clean + offset(log(Operation)) + (1|Camera),
-                      data = subset.rai, na.action = "na.fail")
+# reduced.model.lgd <- lmer(Count ~ Sheep + Dog_RAI + Fire + Season + rugged9.clean + rugged121.clean + road.dist.clean + elevation.clean + slope.clean + vegetation.coarser.clean + offset(log(Operation)) + (1|Camera),
+                      # data = subset.rai, na.action = "na.fail")
 
-AIC(reduced.model.lgd) ## AIC is 5622.88
-vif(reduced.model.lgd) 
+reduced.model.lgd <- glmer(Count ~ Sheep + Dog_RAI + Fire + Season + rugged9.clean
+                + rugged121.clean + road.dist.clean + elevation.clean
+                + slope.clean + vegetation.coarser.clean + offset(log(Operation))
+                + (1 | Camera), data = subset.rai, family = "poisson", na.action = "na.fail")
+
+AIC(reduced.model.lgd) ## AIC is 2771.6
+vif(reduced.model.lgd) # All is under 2
 
 #Now, to dredge! First install and load the MuMIn package
 install.packages("MuMIn")

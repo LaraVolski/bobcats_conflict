@@ -494,7 +494,7 @@ ggplot(subset.rai, aes(x = Season, y = Bobcat_RAI, fill = Season)) +
 ggplot(subset.rai, aes(x = Season, y = Bobcat_RAI, fill = Season)) +
   geom_boxplot() +
   labs(x ="Season", y = "Bobcat Detection Rate") +
-  scale_y_log10() +
+  #scale_y_log10() +
   theme_bw()
   ggsave(file = "bobcat.seasonality.boxplot.png", width = 4, height = 4)
 
@@ -558,6 +558,17 @@ subset.fire.rai <- read.csv("subset.rai.fire.year.csv")
   scale_fill_manual(values=c("cadetblue4", "orange1")) 
   ggsave(file = "bobcat.rai.by.fire.and.grazing.png")
 
+# Chi Square Test of Bobcats/Grazing/Fire
+  mean(subset(x = subset.fire.rai, Sheep == "N" & Fire == "N")$Bobcat_RAI) 
+  mean(subset(x = subset.fire.rai, Sheep == "Y" & Fire == "N")$Bobcat_RAI)
+  mean(subset(x = subset.fire.rai, Sheep == "Y" & Fire == "Y")$Bobcat_RAI)
+  mean(subset(x = subset.fire.rai, Sheep == "N" & Fire == "Y")$Bobcat_RAI)
+  
+  yay <- c(0.01640267, 0.0056773355, 0.1771093406, 0.0000008916519309)
+  yay <- matrix(data = yay, nrow = 2, ncol = 2)
+  chisq.test(yay)
+  
+
 bob.by.burn.and.grazing <- read.csv("bob.by.burn.and.grazing.csv")
 
   ggplot(bob.by.burn.and.grazing, aes(x = Grazed, y = Bobcat_RAI, fill = Grazed)) +
@@ -567,7 +578,7 @@ bob.by.burn.and.grazing <- read.csv("bob.by.burn.and.grazing.csv")
   scale_x_discrete(labels = c("Ungrazed", "Grazed")) +
   scale_y_log10() +
   facet_wrap(~ Fire) +
-  labs(x ="Burned and Fire", y = "Relative Bobcat Activity (detections/month)") +
+  labs(x ="", y = "Bobcat Detection Rate") +
   scale_fill_manual(values=c("cadetblue4", "orange1")) 
   ggsave(file = "bobcat.rai.by.fire.and.grazing.png")
   
@@ -602,8 +613,10 @@ habituation.by.rai.foxY <- read.csv("lyru.habituation.foxlights.csv", header=T)
 
 ggplot(habituation.by.rai.foxY, aes(x = Phase, y = LYRU.RAI)) +
   geom_boxplot(fill = "cadetblue4") +
-  labs(title = "Bobcat Activity by Active Foxlight Phase",
-       x = "First, Second, Third, Fourth, or Fifth Time a Foxlight was Active at a Site", y = "Bobcat RAI")
+  labs(title = "Bobcat Aactivity by Active Foxlight Period",
+       x = "First, Second, Third, Fourth, or Fifth Time a Foxlight was Active at a Site", y = "Bobcat Detection Rate") +
+  theme_bw()
+ggsave("bobcat.activity.by.active.foxlight.phase.png")
 
 medians.by.week <- read.csv("lyru.medians.csv", header=T)
 ggplot(data = medians.by.week, aes(x = Week, y = Median, fill = Foxlight)) +
@@ -613,7 +626,7 @@ ggplot(data = medians.by.week, aes(x = Week, y = Median, fill = Foxlight)) +
         axis.title.x = element_text(size = 12),
         axis.title.y = element_text(size = 12),
         legend.title = element_text(face="bold", size = 10)) +
-labs(x ="Week", y = "Median Bobcat Detections") +
+labs(x ="Week", y = "Median Bobcat Detection Rate") +
   scale_fill_manual(values=c("cadetblue4", "orange1")) + 
   theme_bw()
 
@@ -825,7 +838,7 @@ records.bobcat.bobcat <- subset(record.table.lgd2, Species == "Bobcat")
 records.bobcat.dog <- subset(record.table.lgd2, Species == "Dog")
 
 # define overlap function
-multilines2 <-function (A, B, xscale = 24, linetype = c(1, 2), linecol = c("orange1", "cadetblue4"), n.grid = 128, kmax = 3, adjust = 1,
+multilines2 <-function (A, B, xscale = 24, linetype = c(1, 2), linecol = c("orange1", "white"), n.grid = 128, kmax = 3, adjust = 1,
                         ...) 
 {
   bwA <- getBandWidth(A, kmax = kmax)/adjust
@@ -891,4 +904,46 @@ bs <- as.vector(bsOut[,2])
 sum(subset(all.rai, Class == "Bear")$Count, na.rm = TRUE)
 ```
 
+# A t-test for seasonality
+```{r}
+
+# Summer T-Test with Count Data
+set.seed(1997)
+bobcat.summer <- (subset(subset.rai, Season == "Summer"))
+sum(bobcat.summer$Count) # 79
+mean(bobcat.summer$Count) # 0.15
+sd(bobcat.summer$Count) # 0.5820631
+
+bobcatSummer <- c(rnorm(80, mean = 0.15, sd = 0.5820631))
+t.test(bobcatSummer, mu = 0.3317215) # p-value 2.027e-06
+
+# Summer T-Test with RAI Data
+set.seed(1997)
+bobcat.summer <- (subset(subset.rai, Season == "Summer"))
+mean(bobcat.summer$Bobcat_RAI) # 0.005254837
+sd(bobcat.summer$Bobcat_RAI) # 0.01990193
+
+bobcatSummer <- c(rnorm(80, mean = 0.005254837, sd = 0.01990193))
+t.test(bobcatSummer, mu = 0.01145354) # p-value 2.081e-06
+
+# Winter T-Test with Count Data
+set.seed(1997)
+bobcat.winter <- (subset(subset.rai, Season == "Winter"))
+sum(bobcat.winter$Count) # 252
+mean(bobcat.winter$Count) # 0.4736842
+sd(bobcat.winter$Count) # 1.22945
+
+bobcatWinter <- c(rnorm(261, mean = 0.4736842, sd = 1.22945))
+t.test(bobcatWinter, mu = 0.3317215) # p-value 0.9012
+
+# Winter T-Test with RAI Data
+set.seed(1997)
+bobcat.winter <- (subset(subset.rai, Season == "Winter"))
+sum(bobcat.winter$Bobcat_RAI) # 252
+mean(bobcat.winter$Bobcat_RAI) # 0.01676567
+sd(bobcat.winter$Bobcat_RAI) # 0.04432347
+
+bobcatWinter <- c(rnorm(261, mean = 0.01676567, sd = 0.04432347))
+t.test(bobcatWinter, mu = 0.01145354) # p-value 0.8483
+```
 

@@ -1,0 +1,91 @@
+---
+title: "LGD_Models Post Counseling"
+author: "Lara Volski"
+date: "2022-11-08"
+output: html_document
+---
+
+LGD Models after feedback from stats group
+
+So here's my reduced model (see how I derived it in 'LGD_Models.rmd)
+
+```{r}
+reduced.model.lgd <- lmer(Count ~ Sheep + Dog_RAI + Fire + Season + rugged9.clean + rugged121.clean + road.dist.clean + elevation.clean + slope.clean + vegetation.coarser.clean + offset(log(Operation)) + (1|Camera),
+                          data = subset.rai, na.action = "na.fail")
+```
+
+# And here is what they suggest
+
+```{r}
+Model1 <- glmer(Count ~ Sheep + Dog_RAI + Fire + Season + rugged9.clean
+                + rugged121.clean + road.dist.clean + elevation.clean
+                + slope.clean + vegetation.coarser.clean + offset(log(Operation))
+                + (1 | Camera), data = subset.rai, family = "poisson")
+```
+
+# To obtain coefficient estimates and p-values from this model or any glmer() or lmer() model, use:
+
+```{r}
+summary(Model1)$coefficients
+```
+
+This will return a matrix with the rows as the coefficients (e.g. Sheep, Dog, etc) each with  several columns. The column “Estimate” shows estimated effect of a variable on the log(counts) of bobcat sightings, and the “Pr(>|z|)” column shows the p-value for that estimate. To get the interpretation on the actual count we need to exponentiate the coefficients. The interpretation is then a multiplicative one as explained below.
+
+In regression models we typically interpret the coefficients as the effect of a variable on an outcome among similar levels of covariates and with similar random effects. An example interpretation of the coefficient on dog is:
+
+When comparing grids with similar grid effects, sheep activity, prior wildfires, and the same season but who differ by one dog sighting per month, we estimate that the rate of bobcat sightings in the group that has one more dog sighting per month will be 92% lower (note to Lara: this is calculated as 92% = 1 - exp(-2.469)). Note: look at the google doc they sent to understand why it's -2.469. It's just fake data, here it looks like it would be 0.275. 
+
+The code to produce confidence intervals and example output is pasted below
+
+```{r}
+confidence.intervals <- exp(confint(Model1))
+```
+
+An appropriate interpretation of a 95% confidence interval such as the ones above is that there is approximately a 95% probability that a 95% confidence interval for a coefficient (e.g. exp(-2.469) = 0.0846 for Dog) contains the true value of the coefficient for Dog.
+
+Since you are including multiple measures of dog activity, one way to test if any of these meaningfully impact bobcat activity is to use a likelihood ratio test, using the anova() function as shown below:
+
+```{r}
+Model2 <- glmer(Count ~ Dog_RAI + Fire + Season + rugged9.clean
+                + rugged121.clean + road.dist.clean + elevation.clean
+                + slope.clean + vegetation.coarser.clean + offset(log(Operation)) + (1 | Camera),
+                data = subset.rai, family = "poisson")
+
+Model3 <- glmer(Count ~ Sheep + Fire + Season + rugged9.clean
+                + rugged121.clean + road.dist.clean + elevation.clean
+                + slope.clean + vegetation.coarser.clean + offset(log(Operation)) + (1 | Camera),
+                data = subset.rai, family = "poisson")
+
+anova.test <- anova(Model2, Model3)
+
+```
+The p-value of interest is highlighted in the red box. It is testing whether all the variables present in Model 2 but not Model 1 are zero, i.e. that there is no relationship at all between bobcat count and any of the measures of sheep/dog presence, beyond that explained by the other covariates and the random effects. In this made-up data, the p-value is 5.310-14 , so the result is highly significant. 
+
+Lastly, as mentioned in the session an alternative option to GLMMs is generalized estimating equations (GEE). One downside of using Poisson glmer() is that it relies on the assumption that the mean and the variance are linked; specifically, that the variance of observations is exactly equal to their mean An alternative analysis that does not rely on this assumption is to use GEE. Some example code is shown below
+
+```{r}
+library(geepack) 
+
+
+Geemodel <- geeglm(Count ~ Sheep + Dog_RAI + Fire + Season + rugged9.clean
+                + rugged121.clean + road.dist.clean + elevation.clean
+                + slope.clean + vegetation.coarser.clean + offset(log(Operation)), id=Camera,
+                family="poisson", data=subset.rai, corstr = "exchangeable")
+
+#Generate coefficients and p-values
+Geemodel.summary <- summary(Geemodel)$coefficients
+
+#Generate confidence intervals
+as.data.frame(broom::tidy(x = Geemodel, conf.int = TRUE))
+
+```
+
+The interpretation is similar to that of the glmer() model, except we would remove “grid effects” language. The interpretation might start out instead as “When comparing grids with similar grid effects, sheep activity, prior wildfires…”. In general, we expect GEE to give very similar results to the GLMM analysis. If the confidence intervals are much wider than the GLMM analysis this might indicate the GLMM model fits poorly.
+
+Lastly, as was briefly discussed at the end of the session you have spatial data and there might be spatial correlation between hexagonal cells. For example, cells closer to each other probably have correlated dog/sheep/bobcat activity. If you are interested in this type of analysis, one idea would be to impose spatial correlation between the random effects in your GLMM model. This can be done by creating a 36x36 (# of grid cells x # of grid cells) matrix with a 1 if the grid cells are next to each other and 0 if not. This is called an adjacency matrix (referred to as your_adjacency_matrix in the R code below). Then you can use the fitme() function in the spaMM() package. Documentation for this package is here. Some example code is also below
+
+```{r}
+spatCorrModel <- fitme(Count ~ Sheep + Dog + Fire + Season + offset(log(Operation)) + adjacency(1|camera), data = your_data, family = “poisson”, adjMatrix = your_adjacency_matrix)
+```
+
+	

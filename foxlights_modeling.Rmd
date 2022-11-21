@@ -130,6 +130,7 @@ AIC = 329.0
 fit.null <- glmer.nb(Detections ~ offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"))
 summary(fit.null)
 tab_model(fit.null)
+confint(fit.null, level=0.95)
 ```
 
 ## Foxlight Family of Models
@@ -139,6 +140,7 @@ AIC = 330.5
 fit1 <- glmer.nb(Detections ~ Foxlight + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"))
 summary(fit1)
 tab_model(fit1)
+confint(fit1, level=0.95)
 ```
 
 ### Sheep only
@@ -152,9 +154,31 @@ tab_model(fit2)
 ### Phase only 
 AIC = 335.8
 ```{r}
+
+##old phase
 fit3 <- glmer.nb(Detections ~ Phase + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
 summary(fit3)
 tab_model(fit3)
+confint(fit3, oldNames=FALSE)
+confint(fit3, level=0.95, method="profile")
+
+##new phase
+### Changing phases so that they correspond to FoxY1 and FoxN1.
+#Phase 1 and 2 --> Phase 1
+# Phase 3 and 4 --> Phase 2
+# Phase 5 and 6 --> Phase 3
+# Phase 7 and 8 --> Phase 4
+# Phase 9 --> Phase 5
+phase_key <- tibble(Phase = c("Phase1", "Phase2", "Phase3", "Phase4", "Phase5", "Phase6", "Phase7", "Phase8", "Phase9"), Phase_New = c(1, 1, 2, 2, 3, 3, 4, 4, 5))
+# Then use left_join to join this with the RAI data frame used for modeling, and use this column (Phase_New) as your covariate in modeling. 
+rai <- left_join(rai, phase_key)
+
+fit3.1 <- glmer.nb(Detections ~ Phase_New + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
+summary(fit3.1)
+tab_model(fit3.1)
+confint(fit3.1, oldNames=FALSE)
+confint(fit3.1, level=0.95, method="profile")
+
 ```
 
 ### Foxlight + Sheep
@@ -202,15 +226,13 @@ AIC = 326.6
 ```{r}
 fit9 <- glmer.nb(Detections ~ elevation.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
 summary(fit9)
-confint(fit9, oldNames=FALSE)
+confint(fit9, level=0.95)
 
 # to get R2 (both ways work)
 # option 1
 test <- r.squaredGLMM(fit9)
 # option 2
 tab_model(fit9)
-
-
 ```
 
 ### Ruggedness (49)
@@ -220,6 +242,7 @@ fit10 <- glmer.nb(Detections ~ rugged49.clean + offset(log(Operation)) + (1|Came
 summary(fit10)
 tab_model(fit10)
 confint(fit10, oldNames=FALSE)
+confint(fit10, level=0.95, method="profile")
 
 fit10.1 <- glmer.nb(Detections ~ rugged121.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
 summary(fit10.1)
@@ -229,10 +252,16 @@ tab_model(fit10.1)
 ### Foxlight * Elevation
 AIC = 330.3
 ```{r}
+
 fit11 <- glmer.nb(Detections ~ Foxlight * elevation.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
-summary(fit11)
+
+fit11.summary <- summary(fit11)
 vif(fit11)
 tab_model(fit11)
+confint(fit11, oldNames=FALSE)
+confint(fit11, level=0.95, method="profile")
+confint.merMod(fit11, method="Wald")
+
 ```
 
 ### Foxlight * Ruggedness49
@@ -268,7 +297,7 @@ summary(fit15)
 ## Dogs Scaled
 AIC = 328.1
 ```{r}
-fit16 <- glmer.nb(Detections ~ Dogs_Scaled + offset(log(Operation)) + (1|Camera), data = rai_bobcat_lv)
+fit16 <- glmer.nb(Detections ~ Dogs_Scaled + offset(log(Operation)) + (1|Camera), data = rai_bobcat2)
 summary(fit16)
 tab_model(fit16)
 ```
@@ -284,10 +313,11 @@ tab_model(fit17)
 ## Dog_RAI * Foxlight
 AIC = 333.6
 ```{r}
-fit18 <- glmer.nb(Detections ~ Dog_RAI *  Foxlight + offset(log(Operation)) + (1|Camera), data = rai_bobcat_lv, control=glmerControl(optimizer="bobyqa"))
+fit18 <- glmer.nb(Detections ~ Dog_RAI *  Foxlight + offset(log(Operation)) + (1|Camera), data = rai_bobcat2, control=glmerControl(optimizer="bobyqa"))
 summary(fit18)
 vif(fit18)
 tab_model(fit18)
+confint(fit18, level=0.95)
 ```
 
 

@@ -8,9 +8,20 @@ output: html_document
 
 Included Studies
 ```{r}
-slices <- c(7, 4, 23, 10, 17)
-lbls <- c("Review/Conflict Description", "Review/Tool Evaluation", "Empirical Study/Conflict Description", "Empirical Study/Tool", "Gray Literature")
-pie(slices, labels = lbls, main="Included Papers", col=c("steelblue2", "steelblue", "darkolivegreen3", "darkolivegreen4", "darkgrey"))
+# note, I subtracted 4 papers from the lit review/tool eval and 2 papeers from the e study/con desc pulled them into gray lit. This is not reflected in the google sheets.
+
+# old slides from the first draft slices <- c(7, 4, 23, 10, 17)
+
+Review.ConDesc <- 7 + 2
+Review.ToolEval <- 7
+Estudy.ConDesc <- 27
+Estudy.ToolEval <- 8 + 3
+Estudy.Socialactors <- 13
+GrayLit <- 14
+
+slices <- c(Review.ConDesc, Review.ToolEval, Estudy.ConDesc, Estudy.ToolEval, Estudy.Socialactors, GrayLit)
+lbls <- c("Review/Conflict Description", "Review/Tool Evaluation", "Empirical Study/Conflict Description", "Empirical Study/Tool", "Social Attitudes", "Gray Literature")
+pie(slices, labels = lbls, main="Included Papers", col=c("steelblue2", "steelblue", "darkolivegreen3", "darkolivegreen4", "#FFA500", "darkgrey"))
 ```
 Cattle
 ```{r}
