@@ -68,3 +68,11 @@ slices <- c(5, 1, 1, 1)
 pie(slices, col=c("#53868B", "#FFA500", "#749665", "darkslategray3"))
 
 ```
+
+Wildlife Services
+```{r}
+slices <- c(857,	16671,	23581,	2689)
+lbls <- c("Cattle", "Sheep/Goats", "Domestic Fowl", "Pets")
+pie(slices, labels = lbls, main="Damage or Threats Addressed by Wildlife Services 1996 - 2021", col=c("#749665", "#53868B", "#FFA500", "darkgrey"))
+```
+

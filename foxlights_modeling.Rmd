@@ -356,4 +356,10 @@ tab_model(reduced.model.foxlights)
 
 ```
 
+```{r}
+glm(Detections ~ Foxlight + offset(log(Operation)), data = subset(rai, Species == "LYRU"), family = "poisson")
+
+glm(Bobcat ~ Foxlight + offset(log(Operation)), data = rai_bobcat_lv, family = "binomial")
+```
+
 
