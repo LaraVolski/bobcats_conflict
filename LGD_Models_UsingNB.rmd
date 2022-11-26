@@ -1,0 +1,53 @@
+---
+title: "LGD_Models_UsingNB"
+author: "Lara Volski"
+date: "2022-11-26"
+output: html_document
+---
+
+Read in Data + load packages
+```{r}
+subset.rai <- read.csv("subset.rai.csv")
+library(sjPlot)
+```
+
+Null Model
+AIC = 2575.127
+```{r}
+## Null model/hypothesis - only camera as random effect.
+fit.null <- glmer.nb(Count ~ offset(log(Operation)) + (1|Camera), data = subset.rai)
+summary(fit.null)
+tab_model(fit.null)
+confint(fit.null, level=0.95)
+```
+
+Sheep Presence (Binary, Indicative of dog)
+AIC = 2577.1 
+```{r}
+fit.sheep <- glmer.nb(Count ~ Sheep + offset(log(Operation)) + (1|Camera), data = subset.rai)
+summary(fit.sheep)
+tab_model(fit.sheep)
+confint(fit.sheep, level=0.95)
+```
+
+Dog Presence (Binary)
+AIC = 2576.6, Estimate = 0.19
+```{r}
+fit.dog <- glmer.nb(Count ~ Dog + offset(log(Operation)) + (1|Camera), data = subset.rai)
+summary(fit.dog)
+tab_model(fit.dog)
+```
+
+Dog Presence (RAI)
+AIC = 2576.8, Estimate = 0.662034 # Failure to converge!
+```{r}
+fit.dog.rai <- glmer.nb(Count ~ Dog_RAI + offset(log(Operation)) + (1|Camera), data = subset.rai)
+summary(fit.dog.rai)
+```
+
+Individual Dog Count (Scaled)
+AIC = 2576.9, Estimate = 0.022456 # Failure to converge!
+```{r}
+fit.dog.scaled <- glmer.nb(Count ~ Dogs_Scaled + offset(log(Operation)) + (1|Camera), data = subset.rai)
+summary(fit.dog.scaled)
+```

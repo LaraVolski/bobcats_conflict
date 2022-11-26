@@ -914,6 +914,8 @@ sum(bobcat.summer$Count) # 79
 mean(bobcat.summer$Count) # 0.15
 sd(bobcat.summer$Count) # 0.5820631
 
+mean(subset.rai$Count) # for the mu!
+
 bobcatSummer <- c(rnorm(80, mean = 0.15, sd = 0.5820631))
 t.test(bobcatSummer, mu = 0.3317215) # p-value 2.027e-06
 
@@ -922,6 +924,8 @@ set.seed(1997)
 bobcat.summer <- (subset(subset.rai, Season == "Summer"))
 mean(bobcat.summer$Bobcat_RAI) # 0.005254837
 sd(bobcat.summer$Bobcat_RAI) # 0.01990193
+
+mean(subset.rai$Bobcat_RAI) # for the mu!
 
 bobcatSummer <- c(rnorm(80, mean = 0.005254837, sd = 0.01990193))
 t.test(bobcatSummer, mu = 0.01145354) # p-value 2.081e-06
@@ -934,7 +938,7 @@ mean(bobcat.winter$Count) # 0.4736842
 sd(bobcat.winter$Count) # 1.22945
 
 bobcatWinter <- c(rnorm(261, mean = 0.4736842, sd = 1.22945))
-t.test(bobcatWinter, mu = 0.3317215) # p-value 0.9012
+t.test(bobcatWinter, mu = 0.3317215) # p-value 0.8538
 
 # Winter T-Test with RAI Data
 set.seed(1997)
@@ -944,6 +948,6 @@ mean(bobcat.winter$Bobcat_RAI) # 0.01676567
 sd(bobcat.winter$Bobcat_RAI) # 0.04432347
 
 bobcatWinter <- c(rnorm(261, mean = 0.01676567, sd = 0.04432347))
-t.test(bobcatWinter, mu = 0.01145354) # p-value 0.8483
+t.test(bobcatWinter, mu = 0.01145354) # p-value 0.8006
 ```
 

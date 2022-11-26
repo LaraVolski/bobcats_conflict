@@ -33,7 +33,29 @@ pie(slices, col=c("#53868B", "#FFA500"))
 Sheep/Goat
 ```{r}
 ## Bobcats predate sheep/goats
-slices <- c(10, 2, 2)
+
+# Young 1958 - stomach content analysis
+# Gashwiler et al. 1960 - stomach content analysis
+# Kaiser 1975 - fed/state/county reporting
+# Klebenow and McAdoo 1975 - empirical study
+# Fritts and Sealander 1978 - stomach content analysis
+# Pearson and Caroline 1981 - fed/state/county reporting
+# Green 1983 - emprical study
+# Howard 1985 - rancher survey
+# Goodwin 1985 -fed/state/county reporting
+# NASS 1991 - fed/state/county reporting
+# NASS 1995 - fed/state/county reporting
+# USDA 1997 - fed/state/county reporting
+# Altman 1997 - stomach content analysis
+# NASS 2000 -fed/state/county reporting
+# NASS 2005 - fed/state/county reporting
+# Scasta et al. 2017 - rncher survey
+# USDA 2017 - fed/state/county reporting
+# Holland-Levine 2020 - fed/state/county reporting
+# Floyd 2022 - empirical study
+# Wildlife Services 1996 - 2021 - fed/state/county reporting
+
+slices <- c(11, 7, 2)
 pie(slices, col=c("#749665", "#53868B", "#FFA500"))
 
 ## Bobcats do not predate sheep/goats
@@ -44,8 +66,20 @@ pie(slices, col=c("#53868B", "#749665", "#FFA500"))
 Poultry
 ```{r}
 ## Bobcats predate poultry
-slices <- c(2, 2, 1)
-pie(slices, col=c("#53868B", "#FFA500", "#749665"))
+# Gashwiler et al. 1960 - stomach content analysis
+# Fritts and Sealander 1978 - stomach content analysis
+# Miller 1980 - stomach content analysis
+# Pearson and Caroline 1981 - fed/state/county reporting
+# Knick et al. 1984 - stomach content analysis
+# Maehr 1989 - stomach content analysis
+# Fox 1990 - stomach content analysis
+# Arroyo-Quiroz 2017 - Producer survey
+# USDA 2017 - fed/state/county reporting
+# Fergus 2020 - field research
+# Wildlife Services 1996 – 2021 - fed/state/county reporting
+
+slices <- c(7, 3, 1)
+pie(slices, col=c("#53868B", "#749665", "#FFA500"))
 
 ## Bobcats do not predate poultry
 slices <- c(1)
