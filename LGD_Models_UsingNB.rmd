@@ -51,3 +51,20 @@ AIC = 2576.9, Estimate = 0.022456 # Failure to converge!
 fit.dog.scaled <- glmer.nb(Count ~ Dogs_Scaled + offset(log(Operation)) + (1|Camera), data = subset.rai)
 summary(fit.dog.scaled)
 ```
+
+Fire
+AIC = 2577.1, Estimate = -0.128
+```{r}
+fit.fire <- glmer.nb(Count ~ Fire + offset(log(Operation)) + (1|Camera), data = subset.rai)
+summary(fit.fire)
+```
+
+Season
+AIC = 2532.8, Estimate = negative summer, positive winter
+```{r}
+fit.season <- glmer.nb(Count ~ Season + offset(log(Operation)) + (1|Camera), data = subset.rai)
+summary(fit.season)
+```
+
+
+
