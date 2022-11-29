@@ -66,5 +66,83 @@ fit.season <- glmer.nb(Count ~ Season + offset(log(Operation)) + (1|Camera), dat
 summary(fit.season)
 ```
 
+Ruggedness.9
+AIC = 2577.1, Estimate = -0.00342
+```{r}
+fit.rugged9 <- glmer.nb(Count ~ rugged9.clean + offset(log(Operation)) + (1|Camera), data = subset.rai)
+summary(fit.rugged9)
+```
 
+Ruggedness.121
+AIC = 2568.2, Estimate = 0.5970
+```{r}
+fit.rugged121 <- glmer.nb(Count ~ rugged121.clean + offset(log(Operation)) + (1|Camera), data = subset.rai)
+summary(fit.rugged121)
+```
+
+Distance from road
+AIC = 2575.6, Estimate = 0.2697
+```{r}
+fit.road <- glmer.nb(Count ~ road.dist.clean + offset(log(Operation)) + (1|Camera), data = subset.rai)
+summary(fit.road)
+```
+
+Elevation
+AIC = 2577.0, Estimate = 0.08634
+```{r}
+fit.elevation <- glmer.nb(Count ~ elevation.clean + offset(log(Operation)) + (1|Camera), data = subset.rai)
+summary(fit.elevation)
+```
+
+Slope
+AIC = 2577.0, Estimate = 0.08295
+```{r}
+fit.slope <- glmer.nb(Count ~ slope.clean + offset(log(Operation)) + (1|Camera), data = subset.rai)
+summary(fit.slope)
+```
+
+Vegetation Type
+AIC = 2578.1, Estimate = grassland and woodland are both negative
+```{r}
+fit.veg <- glmer.nb(Count ~ vegetation.coarser.clean + offset(log(Operation)) + (1|Camera), data = subset.rai)
+summary(fit.veg)
+```
+
+# Combining Estimates
+Season + Ruggedness
+AIC = 2525.8, Marginal/Conditional R^2 = 0.072 / 0.206, CI = 
+```{r}
+fit.1 <- glmer.nb(Count ~ Season + rugged121.clean + offset(log(Operation)) + (1|Camera), data = subset.rai)
+summary(fit.1)
+vif(fit.1)
+tab_model(fit.1)
+```
+
+Season + Ruggedness + Dog_RAI
+AIC = 2527.785, Marginal/Conditional R^2 = 0.072 / 0.206, CI = 
+```{r}
+fit.2 <- glmer.nb(Count ~ Season + rugged121.clean + Dog_RAI + offset(log(Operation)) + (1|Camera), data = subset.rai)
+vif(fit.2)
+summary(fit.2)
+tab_model(fit.2)
+confint(fit.2, level=0.95)
+```
+
+Season * Dog_RAI
+AIC = 2539.206, Marginal/Conditional R^2 = 0.031 / 0.209
+```{r}
+fit.3 <- glmer.nb(Count ~ Season * Dog_RAI + offset(log(Operation)) + (1|Camera), data = subset.rai)
+vif(fit.3) # Over 2?
+summary(fit.3)
+tab_model(fit.3)
+```
+
+Ruggedness * Dog_RAI
+AIC = 2571.856, Marginal/Conditional R^2 = 0.045 / 0.183
+```{r}
+fit.4 <- glmer.nb(Count ~ rugged121.clean * Dog_RAI + offset(log(Operation)) + (1|Camera), data = subset.rai)
+vif(fit.4) # Over 2?
+summary(fit.4)
+tab_model(fit.4)
+```
 

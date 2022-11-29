@@ -173,7 +173,7 @@ phase_key <- tibble(Phase = c("Phase1", "Phase2", "Phase3", "Phase4", "Phase5", 
 # Then use left_join to join this with the RAI data frame used for modeling, and use this column (Phase_New) as your covariate in modeling. 
 rai <- left_join(rai, phase_key)
 
-fit3.1 <- glmer.nb(Detections ~ Phase_New + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
+fit3.1 <- glmer.nb(Detections ~ as.character(Phase_New) + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
 summary(fit3.1)
 tab_model(fit3.1)
 confint(fit3.1, oldNames=FALSE)
