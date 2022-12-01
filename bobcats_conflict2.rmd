@@ -612,10 +612,12 @@ ggplot(rai_bobcat_lv, aes(x = Foxlight, y = RAI*35, fill = Foxlight)) +
 habituation.by.rai.foxY <- read.csv("lyru.habituation.foxlights.csv", header=T)
 
 ggplot(habituation.by.rai.foxY, aes(x = Phase, y = LYRU.RAI)) +
-  geom_boxplot(fill = "cadetblue4") +
-  labs(title = "Bobcat Aactivity by Active Foxlight Period",
+geom_boxplot(fill = "cadetblue4") +
+geom_jitter() +
+labs(title = "Bobcat Detection Rate by Active Foxlight Period",
        x = "First, Second, Third, Fourth, or Fifth Time a Foxlight was Active at a Site", y = "Bobcat Detection Rate") +
-  theme_bw()
+  theme_bw() 
+
 ggsave("bobcat.activity.by.active.foxlight.phase.png")
 
 medians.by.week <- read.csv("lyru.medians.csv", header=T)

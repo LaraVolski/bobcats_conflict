@@ -173,7 +173,7 @@ phase_key <- tibble(Phase = c("Phase1", "Phase2", "Phase3", "Phase4", "Phase5", 
 # Then use left_join to join this with the RAI data frame used for modeling, and use this column (Phase_New) as your covariate in modeling. 
 rai <- left_join(rai, phase_key)
 
-fit3.1 <- glmer.nb(Detections ~ as.character(Phase_New) + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
+fit3.1 <- glmer.nb(Detections ~ Phase_New + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
 summary(fit3.1)
 tab_model(fit3.1)
 confint(fit3.1, oldNames=FALSE)
@@ -208,7 +208,9 @@ summary(fit6)
 ### Foxlight * Phase
 AIC = 343.3 
 ```{r}
-fit7 <- glmer.nb(Detections ~ Foxlight * Phase + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
+fit7 <- glmer.nb(Detections ~ Phase * Foxlight + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
+
+fit7 <- glmer.nb(Detections ~ Phase * Foxlight + offset(log(Operation)) + (1|Camera), data = rai_bobcat2, control=glmerControl(optimizer="bobyqa"))
 summary(fit7)
 ```
 
@@ -247,12 +249,14 @@ confint(fit10, level=0.95, method="profile")
 fit10.1 <- glmer.nb(Detections ~ rugged121.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
 summary(fit10.1)
 tab_model(fit10.1)
+
+fit10.2 <- glmer.nb(Detections ~ rugged9.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
+tab_model(fit10.2)
 ```
 
 ### Foxlight * Elevation
 AIC = 330.3
 ```{r}
-
 fit11 <- glmer.nb(Detections ~ Foxlight * elevation.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
 
 fit11.summary <- summary(fit11)

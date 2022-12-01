@@ -33,7 +33,7 @@ confint(fit.sheep, level=0.95)
 Dog Presence (Binary)
 AIC = 2576.6, Estimate = 0.19
 ```{r}
-fit.dog <- glmer.nb(Count ~ Dog + offset(log(Operation)) + (1|Camera), data = subset.rai)
+fit.dog <- glmer.nb(Count ~ Dog + offset(log(Operation)) + (1|Camera), data = subset.rai, control=glmerControl(optimizer="bobyqa"))
 summary(fit.dog)
 tab_model(fit.dog)
 ```
@@ -41,15 +41,27 @@ tab_model(fit.dog)
 Dog Presence (RAI)
 AIC = 2576.8, Estimate = 0.662034 # Failure to converge!
 ```{r}
-fit.dog.rai <- glmer.nb(Count ~ Dog_RAI + offset(log(Operation)) + (1|Camera), data = subset.rai)
+# Scaling Dog_RAI
+
+mean(subset.rai$Dog_RAI) #0.006537058
+sd(subset.rai$Dog_RAI) # 0.05177796
+
+(0 - 0.006537058) / 0.05177796 # -0.1262517
+
+fit.dog.rai <- glmer.nb(Count ~ Dog_RAI_Scaled + offset(log(Operation)) + (1|Camera), data = subset.rai, control=glmerControl(optimizer="bobyqa"))
 summary(fit.dog.rai)
+tab_model(fit.dog.rai)
+
+ggplot(subset.rai, aes(x = Bobcat_RAI, y = Dog_RAI_Scaled)) +
+  geom_smooth()
 ```
 
 Individual Dog Count (Scaled)
 AIC = 2576.9, Estimate = 0.022456 # Failure to converge!
 ```{r}
-fit.dog.scaled <- glmer.nb(Count ~ Dogs_Scaled + offset(log(Operation)) + (1|Camera), data = subset.rai)
+fit.dog.scaled <- glmer.nb(Count ~ Dogs_Scaled + offset(log(Operation)) + (1|Camera), data = subset.rai, control=glmerControl(optimizer="bobyqa"))
 summary(fit.dog.scaled)
+
 ```
 
 Fire
@@ -64,6 +76,7 @@ AIC = 2532.8, Estimate = negative summer, positive winter
 ```{r}
 fit.season <- glmer.nb(Count ~ Season + offset(log(Operation)) + (1|Camera), data = subset.rai)
 summary(fit.season)
+tab_model(fit.season)
 ```
 
 Ruggedness.9
@@ -78,6 +91,7 @@ AIC = 2568.2, Estimate = 0.5970
 ```{r}
 fit.rugged121 <- glmer.nb(Count ~ rugged121.clean + offset(log(Operation)) + (1|Camera), data = subset.rai)
 summary(fit.rugged121)
+tab_model(fit.rugged121)
 ```
 
 Distance from road
@@ -116,22 +130,23 @@ fit.1 <- glmer.nb(Count ~ Season + rugged121.clean + offset(log(Operation)) + (1
 summary(fit.1)
 vif(fit.1)
 tab_model(fit.1)
+fit.1.CIs <- confint(fit.1, level=0.95)
 ```
 
 Season + Ruggedness + Dog_RAI
 AIC = 2527.785, Marginal/Conditional R^2 = 0.072 / 0.206, CI = 
 ```{r}
-fit.2 <- glmer.nb(Count ~ Season + rugged121.clean + Dog_RAI + offset(log(Operation)) + (1|Camera), data = subset.rai)
+fit.2 <- glmer.nb(Count ~ Season + rugged121.clean + Dog_RAI_Scaled + offset(log(Operation)) + (1|Camera), data = subset.rai)
 vif(fit.2)
 summary(fit.2)
 tab_model(fit.2)
-confint(fit.2, level=0.95)
+fit.2.CIs <- confint(fit.2, level=0.95)
 ```
 
 Season * Dog_RAI
 AIC = 2539.206, Marginal/Conditional R^2 = 0.031 / 0.209
 ```{r}
-fit.3 <- glmer.nb(Count ~ Season * Dog_RAI + offset(log(Operation)) + (1|Camera), data = subset.rai)
+fit.3 <- glmer.nb(Count ~ Dog_RAI * Season + offset(log(Operation)) + (1|Camera), data = subset.rai)
 vif(fit.3) # Over 2?
 summary(fit.3)
 tab_model(fit.3)
@@ -145,4 +160,15 @@ vif(fit.4) # Over 2?
 summary(fit.4)
 tab_model(fit.4)
 ```
+
+Ruggedness * Dog_RAI
+AIC = 2577.247, Marginal/Conditional R^2 = 0.045 / 0.183
+```{r}
+fit.5 <- glmer.nb(Count ~ Sheep * Fire + offset(log(Operation)) + (1|Camera), data = subset.fire.rai)
+vif(fit.5) # Over 2?
+tab_model(fit.5)
+summary(fit.4)
+tab_model(fit.4)
+```
+
 
